@@ -1,5 +1,5 @@
 {
-    "name": "roblox-badge-proxy",
+    "name": "pekora-player-data",
     "version": "1.0.0",
     "description": "A proxy server for Roblox badge API requests",
     "main": "api/badges.js",

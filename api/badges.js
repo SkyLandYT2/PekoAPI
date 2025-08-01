@@ -6,9 +6,16 @@ const app = express();
 app.use(express.json());
 app.use(cors({ origin: '*' })); // Allow all origins for Roblox HttpService
 
-// Endpoint to fetch badges for a given user ID
-app.get('/badges/:userId', async (req, res) => {
-    const userId = req.params.userId;
+// Endpoint to fetch badges using query parameter ?id
+app.get('/api/badge', async (req, res) => {
+    const userId = req.query.id;
+    
+    // Validate userId
+    if (!userId || isNaN(userId)) {
+        console.error('Invalid or missing userId in query parameter');
+        return res.status(400).json({ error: 'Invalid or missing userId parameter' });
+    }
+
     const robloxSecurityCookie = process.env.ROBLOSECURITY_COOKIE;
 
     // Log request for debugging
@@ -35,7 +42,6 @@ app.get('/badges/:userId', async (req, res) => {
     } catch (error) {
         console.error(`Error fetching badges for userId: ${userId}`, error.message);
         if (error.response) {
-            // Log detailed error from pekora.zip
             console.error('API response:', error.response.status, error.response.data);
             res.status(error.response.status).json({
                 error: 'Failed to fetch badges from pekora.zip',
@@ -52,7 +58,7 @@ app.get('/badges/:userId', async (req, res) => {
 
 // Fallback route for debugging
 app.get('/', (req, res) => {
-    res.json({ message: 'Roblox Badge Proxy Server is running' });
+    res.json({ message: 'Roblox Badge Proxy Server is running. Use /api/badge?id={userId} to fetch badges.' });
 });
 
 module.exports = app;

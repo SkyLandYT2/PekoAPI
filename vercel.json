@@ -2,7 +2,7 @@
     "version": 2,
     "rewrites": [
         {
-            "source": "/api/badges/:userId",
+            "source": "/api/badge",
             "destination": "/api/badges"
         },
         {
