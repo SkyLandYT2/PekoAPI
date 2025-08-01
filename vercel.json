@@ -1,0 +1,15 @@
+{
+    "version": 2,
+    "rewrites": [
+        {
+            "source": "/api/badges/:userId",
+            "destination": "/api/badges"
+        }
+    ],
+    "functions": {
+        "api/badges.js": {
+            "memory": 128,
+            "maxDuration": 10
+        }
+    }
+}
