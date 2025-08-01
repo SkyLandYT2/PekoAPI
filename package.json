@@ -1,10 +1,10 @@
 {
     "name": "pekora-player-data",
     "version": "1.0.0",
-    "description": "A proxy server for Roblox badge API requests",
-    "main": "api/badges.js",
+    "description": "A proxy server for Roblox badge and BC API requests",
+    "main": "api/index.js",
     "scripts": {
-        "start": "node api/badges.js",
+        "start": "node api/index.js",
         "vercel-dev": "vercel dev"
     },
     "dependencies": {
