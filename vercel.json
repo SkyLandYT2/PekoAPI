@@ -4,6 +4,10 @@
         {
             "source": "/api/badges/:userId",
             "destination": "/api/badges"
+        },
+        {
+            "source": "/",
+            "destination": "/api/badges"
         }
     ],
     "functions": {
