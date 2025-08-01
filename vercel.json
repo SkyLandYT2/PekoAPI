@@ -3,15 +3,19 @@
     "rewrites": [
         {
             "source": "/api/badge",
-            "destination": "/api/badges"
+            "destination": "/api/index"
+        },
+        {
+            "source": "/api/bc",
+            "destination": "/api/index"
         },
         {
             "source": "/",
-            "destination": "/api/badges"
+            "destination": "/api/index"
         }
     ],
     "functions": {
-        "api/badges.js": {
+        "api/index.js": {
             "memory": 128,
             "maxDuration": 10
         }
