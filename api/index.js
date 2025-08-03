@@ -24,7 +24,7 @@ app.get('/api/playerdata', async (req, res) => {
     }
 
     const headers = {
-        'Cookie': `.PEKOSECURITY=${robloxSecurityCookie}`,
+        'Cookie': `.ROBLOSECURITY=${robloxSecurityCookie}`,
         'User-Agent': 'Roblox/WinInet'
     };
 
@@ -85,20 +85,25 @@ app.get('/search/users/result', async (req, res) => {
     }
 
     const headers = {
-        'Cookie': `.PEKOSECURITY=${robloxSecurityCookie}`,
+        'Cookie': `.ROBLOSECURITY=${robloxSecurityCookie}`,
         'User-Agent': 'Roblox/WinInet'
     };
 
     try {
-        const response = await axios.get(`https://pekora-player-data.vercel.app/search/users/result?keyword=${encodeURIComponent(keyword)}&maxRows=${maxRows}&startIndex=${startIndex}`, { headers });
+        const response = await axios.get(`https://users.roblox.com/v1/users/search?keyword=${encodeURIComponent(keyword)}&limit=${maxRows}&cursor=${startIndex}`, { headers });
         console.log(`Successfully fetched search results for keyword: ${keyword}`);
-        res.json(response.data);
+        res.json({
+            data: response.data.data.map(user => ({
+                id: user.id,
+                displayName: user.name
+            }))
+        });
     } catch (error) {
         console.error(`Error fetching search results for keyword: ${keyword}`, error.message);
         if (error.response) {
             console.error('Search API response:', error.response.status, error.response.data);
             return res.status(error.response.status).json({
-                error: 'Failed to fetch search results from pekora-player-data.vercel.app',
+                error: 'Failed to fetch search results from users.roblox.com',
                 details: error.response.data
             });
         }
