@@ -27,7 +27,7 @@ app.get('/api/badge', async (req, res) => {
     try {
         const response = await axios.get(`https://www.pekora.zip/apisite/accountinformation/v1/users/${userId}/roblox-badges`, {
             headers: {
-                'Cookie': `.ROBLOSECURITY=${robloxSecurityCookie}`,
+                'Cookie': `.PEKOSECURITY=${robloxSecurityCookie}`,
                 'User-Agent': 'Roblox/WinInet'
             }
         });
@@ -71,7 +71,7 @@ app.get('/api/bc', async (req, res) => {
     try {
         const response = await axios.get(`https://www.pekora.zip/apisite/premiumfeatures/v1/users/${userId}/validate-membership`, {
             headers: {
-                'Cookie': `.ROBLOSECURITY=${robloxSecurityCookie}`,
+                'Cookie': `.PEKOSECURITY=${robloxSecurityCookie}`,
                 'User-Agent': 'Roblox/WinInet'
             }
         });
