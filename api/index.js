@@ -47,7 +47,9 @@ app.get('/api/playerdata', async (req, res) => {
             bc: bcResponse.data,
             hasVerifiedBadge: userResponse.data.hasVerifiedBadge,
             status: statusResponse.data.status,
-            description: userResponse.data.description
+            description: userResponse.data.description,
+            created: userResponse.data.created,
+            inventory_rap: userResponse.data.inventory_rap
         });
     } catch (error) {
         console.error(`Error fetching playerdata for userId: ${userId}`, error.message);
