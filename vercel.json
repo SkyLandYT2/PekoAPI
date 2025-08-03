@@ -2,11 +2,7 @@
     "version": 2,
     "rewrites": [
         {
-            "source": "/api/badge",
-            "destination": "/api/index"
-        },
-        {
-            "source": "/api/bc",
+            "source": "/api/playerdata",
             "destination": "/api/index"
         },
         {
