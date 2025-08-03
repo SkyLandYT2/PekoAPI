@@ -6,6 +6,10 @@
             "destination": "/api/index"
         },
         {
+            "source": "/search/users/results",
+            "destination": "/api/index"
+        },
+        {
             "source": "/",
             "destination": "/api/index"
         }
