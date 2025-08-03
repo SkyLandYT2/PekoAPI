@@ -90,7 +90,7 @@ app.get('/search/users/result', async (req, res) => {
     };
 
     try {
-        const response = await axios.get(`https://users.roblox.com/v1/users/search?keyword=${encodeURIComponent(keyword)}&limit=${maxRows}&cursor=${startIndex}`, { headers });
+        const response = await axios.get(`https://www.pekora.zip/search/search?keyword=${encodeURIComponent(keyword)}&maxRows=${maxRows}&startIndex=${startIndex}`, { headers });
         console.log(`Successfully fetched search results for keyword: ${keyword}`);
         res.json({
             data: response.data.data.map(user => ({
