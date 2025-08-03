@@ -33,8 +33,10 @@ app.get('/api/playerdata', async (req, res) => {
         const bcPromise = axios.get(`https://www.pekora.zip/apisite/premiumfeatures/v1/users/${userId}/validate-membership`, { headers });
         const verifyPromise = axios.get(`https://www.pekora.zip/apisite/users/v1/users/${userId}`, { headers });
         const statusPromise = axios.get(`https://www.pekora.zip/apisite/users/v1/users/${userId}/status`, { headers });
+        const userData = axios.get(`https://www.pekora.zip/apisite/users/v1/users/${userId}`, { headers });
 
-        const [badgesResponse, bcResponse, verifyResponse, statusResponse] = await Promise.all([badgesPromise, bcPromise, verifyPromise, statusPromise]);
+        
+        const [badgesResponse, bcResponse, verifyResponse, statusResponse, userResponse] = await Promise.all([badgesPromise, bcPromise, verifyPromise, statusPromise, userData]);
 
         console.log(`Successfully fetched playerdata for userId: ${userId}`);
         res.json({
@@ -42,6 +44,7 @@ app.get('/api/playerdata', async (req, res) => {
             bc: bcResponse.data,
             hasVerifiedBadge: verifyResponse.data.hasVerifiedBadge,
             status: statusResponse.data.status
+            description: userResponse.data.description
         });
     } catch (error) {
         console.error(`Error fetching playerdata for userId: ${userId}`, error.message);
