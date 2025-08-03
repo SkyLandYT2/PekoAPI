@@ -67,7 +67,7 @@ app.get('/api/playerdata', async (req, res) => {
     }
 });
 
-app.get('/search/users/results', async (req, res) => {
+app.get('/search/users/result', async (req, res) => {
     const keyword = req.query.keyword;
     const maxRows = parseInt(req.query.maxRows) || 12;
     const startIndex = parseInt(req.query.startIndex) || 0;
@@ -110,7 +110,7 @@ app.get('/search/users/results', async (req, res) => {
 });
 
 app.get('/', (req, res) => {
-    res.json({ message: 'Roblox Player Data Proxy Server is running. Use /api/playerdata?id={userId} or /search/users/results?keyword={keyword}.' });
+    res.json({ message: 'Roblox Player Data Proxy Server is running. Use /api/playerdata?id={userId} or /search/users/result?keyword={keyword}.' });
 });
 
 module.exports = app;
