@@ -10,10 +10,14 @@
             "destination": "/api/index"
         },
         {
+            "source": "/search/users/data",
+            "destination": "/api/index"
+        },
+        {
             "source": "/",
             "destination": "/api/index"
         }
-    ]
+    ],
     "functions": {
         "api/index.js": {
             "memory": 128,
