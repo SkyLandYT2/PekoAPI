@@ -4,9 +4,8 @@ const cors = require('cors');
 
 const app = express();
 app.use(express.json());
-app.use(cors({ origin: '*' })); // Allow all origins for Roblox HttpService
+app.use(cors({ origin: '*' }));
 
-// Unified endpoint for player data (badges, BC, and verification status)
 app.get('/api/playerdata', async (req, res) => {
     const userId = req.query.id;
     
@@ -30,21 +29,19 @@ app.get('/api/playerdata', async (req, res) => {
     };
 
     try {
-        // Fetch badges
         const badgesPromise = axios.get(`https://www.pekora.zip/apisite/accountinformation/v1/users/${userId}/roblox-badges`, { headers });
-        // Fetch BC membership
         const bcPromise = axios.get(`https://www.pekora.zip/apisite/premiumfeatures/v1/users/${userId}/validate-membership`, { headers });
-        // Fetch verification status
         const verifyPromise = axios.get(`https://www.pekora.zip/apisite/users/v1/users/${userId}`, { headers });
+        const statusPromise = axios.get(`https://www.pekora.zip/apisite/users/v1/users/${userId}/status`, { headers });
 
-        // Wait for all requests to complete
-        const [badgesResponse, bcResponse, verifyResponse] = await Promise.all([badgesPromise, bcPromise, verifyPromise]);
+        const [badgesResponse, bcResponse, verifyResponse, statusResponse] = await Promise.all([badgesPromise, bcPromise, verifyPromise, statusPromise]);
 
         console.log(`Successfully fetched playerdata for userId: ${userId}`);
         res.json({
             badges: badgesResponse.data,
             bc: bcResponse.data,
-            hasVerifiedBadge: verifyResponse.data.hasVerifiedBadge
+            hasVerifiedBadge: verifyResponse.data.hasVerifiedBadge,
+            status: statusResponse.data.status
         });
     } catch (error) {
         console.error(`Error fetching playerdata for userId: ${userId}`, error.message);
@@ -63,7 +60,6 @@ app.get('/api/playerdata', async (req, res) => {
     }
 });
 
-// Fallback route for debugging
 app.get('/', (req, res) => {
     res.json({ message: 'Roblox Player Data Proxy Server is running. Use /api/playerdata?id={userId}.' });
 });
