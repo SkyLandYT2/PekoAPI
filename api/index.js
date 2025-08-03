@@ -90,7 +90,7 @@ app.get('/search/users/results', async (req, res) => {
     };
 
     try {
-        const response = await axios.get(`https://www.pekora.zip/search/users/results?keyword=${encodeURIComponent(keyword)}&maxRows=${maxRows}&startIndex=${startIndex}`, { headers });
+        const response = await axios.get(`https://pekora-player-data.vercel.app/search/users/result?keyword=${encodeURIComponent(keyword)}&maxRows=${maxRows}&startIndex=${startIndex}`, { headers });
         console.log(`Successfully fetched search results for keyword: ${keyword}`);
         res.json(response.data);
     } catch (error) {
@@ -98,7 +98,7 @@ app.get('/search/users/results', async (req, res) => {
         if (error.response) {
             console.error('Search API response:', error.response.status, error.response.data);
             return res.status(error.response.status).json({
-                error: 'Failed to fetch search results from pekora.zip',
+                error: 'Failed to fetch search results from pekora-player-data.vercel.app',
                 details: error.response.data
             });
         }
