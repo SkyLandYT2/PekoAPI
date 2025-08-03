@@ -67,20 +67,20 @@ app.get('/api/playerdata', async (req, res) => {
     }
 });
 
-app.get('/search/users/result', async (req, res) => {
+app.get('/api/users/data', async (req, res) => {
     const keyword = req.query.keyword;
-    const maxRows = parseInt(req.query.maxRows) || 12;
-    const startIndex = parseInt(req.query.startIndex) || 0;
 
-    if (!keyword) {
-        console.error('Missing keyword for search request');
-        return res.status(400).json({ error: 'Missing keyword parameter' });
+    if (!keyword || typeof keyword !== 'string' || keyword.trim() === '') {
+        console.error('Invalid or missing keyword for user search request');
+        return res.status(400).json({ error: 'Invalid or missing keyword parameter' });
     }
 
     const robloxSecurityCookie = process.env.ROBLOSECURITY_COOKIE;
 
+    console.log(`Received user search request for keyword: ${keyword}`);
+
     if (!robloxSecurityCookie) {
-        console.error('Missing ROBLOSECURITY_COOKIE for search request');
+        console.error('Missing ROBLOSECURITY_COOKIE for user search request');
         return res.status(500).json({ error: 'Server configuration error: Missing ROBLOSECURITY_COOKIE' });
     }
 
@@ -90,32 +90,28 @@ app.get('/search/users/result', async (req, res) => {
     };
 
     try {
-        const response = await axios.get(`https://www.pekora.zip/search/search?keyword=${encodeURIComponent(keyword)}&maxRows=${maxRows}&startIndex=${startIndex}`, { headers });
-        console.log(`Successfully fetched search results for keyword: ${keyword}`);
-        res.json({
-            data: response.data.data.map(user => ({
-                id: user.id,
-                displayName: user.name
-            }))
-        });
+        const searchResponse = await axios.get(`https://www.pekora.zip/search/users/results?keyword=${encodeURIComponent(keyword)}&maxRows=12&startIndex=0`, { headers });
+        
+        console.log(`Successfully fetched user search data for keyword: ${keyword}`);
+        res.json(searchResponse.data);
     } catch (error) {
-        console.error(`Error fetching search results for keyword: ${keyword}`, error.message);
+        console.error(`Error fetching user search data for keyword: ${keyword}`, error.message);
         if (error.response) {
-            console.error('Search API response:', error.response.status, error.response.data);
+            console.error('User search API response:', error.response.status, error.response.data);
             return res.status(error.response.status).json({
-                error: 'Failed to fetch search results from users.roblox.com',
+                error: 'Failed to fetch user search data from pekora.zip',
                 details: error.response.data
             });
         }
         res.status(500).json({
-            error: 'Failed to fetch search results',
+            error: 'Failed to fetch user search data',
             details: error.message
         });
     }
 });
 
 app.get('/', (req, res) => {
-    res.json({ message: 'Roblox Player Data Proxy Server is running. Use /api/playerdata?id={userId} or /search/users/result?keyword={keyword}.' });
+    res.json({ message: 'Roblox Player Data Proxy Server is running. Use /api/playerdata?id={userId} or /api/users/data?keyword={keyword}.' });
 });
 
 module.exports = app;
