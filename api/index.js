@@ -67,8 +67,50 @@ app.get('/api/playerdata', async (req, res) => {
     }
 });
 
+app.get('/search/users/results', async (req, res) => {
+    const keyword = req.query.keyword;
+    const maxRows = parseInt(req.query.maxRows) || 12;
+    const startIndex = parseInt(req.query.startIndex) || 0;
+
+    if (!keyword) {
+        console.error('Missing keyword for search request');
+        return res.status(400).json({ error: 'Missing keyword parameter' });
+    }
+
+    const robloxSecurityCookie = process.env.ROBLOSECURITY_COOKIE;
+
+    if (!robloxSecurityCookie) {
+        console.error('Missing ROBLOSECURITY_COOKIE for search request');
+        return res.status(500).json({ error: 'Server configuration error: Missing ROBLOSECURITY_COOKIE' });
+    }
+
+    const headers = {
+        'Cookie': `.PEKOSECURITY=${robloxSecurityCookie}`,
+        'User-Agent': 'Roblox/WinInet'
+    };
+
+    try {
+        const response = await axios.get(`https://www.pekora.zip/search/users/results?keyword=${encodeURIComponent(keyword)}&maxRows=${maxRows}&startIndex=${startIndex}`, { headers });
+        console.log(`Successfully fetched search results for keyword: ${keyword}`);
+        res.json(response.data);
+    } catch (error) {
+        console.error(`Error fetching search results for keyword: ${keyword}`, error.message);
+        if (error.response) {
+            console.error('Search API response:', error.response.status, error.response.data);
+            return res.status(error.response.status).json({
+                error: 'Failed to fetch search results from pekora.zip',
+                details: error.response.data
+            });
+        }
+        res.status(500).json({
+            error: 'Failed to fetch search results',
+            details: error.message
+        });
+    }
+});
+
 app.get('/', (req, res) => {
-    res.json({ message: 'Roblox Player Data Proxy Server is running. Use /api/playerdata?id={userId}.' });
+    res.json({ message: 'Roblox Player Data Proxy Server is running. Use /api/playerdata?id={userId} or /search/users/results?keyword={keyword}.' });
 });
 
 module.exports = app;
