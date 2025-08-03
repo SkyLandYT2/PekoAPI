@@ -6,7 +6,7 @@
             "destination": "/api/index"
         },
         {
-            "source": "/search/users/result",
+            "source": "/api/users/data",
             "destination": "/api/index"
         },
         {
