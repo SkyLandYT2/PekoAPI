@@ -7,9 +7,9 @@ app.use(express.json());
 app.use(cors({ origin: '*' }));
 
 app.get('/api/playerdata', async (req, res) => {
-    const userId = req.query.id;
-    
-    if (!userId || isNaN(userId)) {
+    const userId = parseInt(req.query.id, 10);
+
+    if (!userId || isNaN(userId) || userId <= 0) {
         console.error('Invalid or missing userId for playerdata request');
         return res.status(400).json({ error: 'Invalid or missing userId parameter' });
     }
@@ -31,35 +31,37 @@ app.get('/api/playerdata', async (req, res) => {
     try {
         const badgesPromise = axios.get(`https://www.pekora.zip/apisite/accountinformation/v1/users/${userId}/roblox-badges`, { headers });
         const bcPromise = axios.get(`https://www.pekora.zip/apisite/premiumfeatures/v1/users/${userId}/validate-membership`, { headers });
-        const verifyPromise = axios.get(`https://www.pekora.zip/apisite/users/v1/users/${userId}`, { headers });
+        const userPromise = axios.get(`https://www.pekora.zip/apisite/users/v1/users/${userId}`, { headers });
         const statusPromise = axios.get(`https://www.pekora.zip/apisite/users/v1/users/${userId}/status`, { headers });
-        const userData = axios.get(`https://www.pekora.zip/apisite/users/v1/users/${userId}`, { headers });
 
-        
-        const [badgesResponse, bcResponse, verifyResponse, statusResponse, userResponse] = await Promise.all([badgesPromise, bcPromise, verifyPromise, statusPromise, userData]);
+        const [badgesResponse, bcResponse, userResponse, statusResponse] = await Promise.all([
+            badgesPromise.catch(err => { throw new Error(`Badges API failed: ${err.message}`); }),
+            bcPromise.catch(err => { throw new Error(`BC API failed: ${err.message}`); }),
+            userPromise.catch(err => { throw new Error(`User API failed: ${err.message}`); }),
+            statusPromise.catch(err => { throw new Error(`Status API failed: ${err.message}`); })
+        ]);
 
         console.log(`Successfully fetched playerdata for userId: ${userId}`);
         res.json({
             badges: badgesResponse.data,
             bc: bcResponse.data,
-            hasVerifiedBadge: verifyResponse.data.hasVerifiedBadge,
-            status: statusResponse.data.status
+            hasVerifiedBadge: userResponse.data.hasVerifiedBadge,
+            status: statusResponse.data.status,
             description: userResponse.data.description
         });
     } catch (error) {
         console.error(`Error fetching playerdata for userId: ${userId}`, error.message);
         if (error.response) {
             console.error('Playerdata API response:', error.response.status, error.response.data);
-            res.status(error.response.status).json({
+            return res.status(error.response.status).json({
                 error: 'Failed to fetch playerdata from pekora.zip',
                 details: error.response.data
             });
-        } else {
-            res.status(500).json({
-                error: 'Failed to fetch playerdata',
-                details: error.message
-            });
         }
+        res.status(500).json({
+            error: 'Failed to fetch playerdata',
+            details: error.message
+        });
     }
 });
 
