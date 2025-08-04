@@ -50,8 +50,9 @@ app.get('/api/playerdata', async (req, res) => {
             description: userResponse.data.description,
             created: userResponse.data.created,
             inventory_rap: userResponse.data.inventory_rap,
-            name: userResponse.data.name, // Added name
-            displayName: userResponse.data.displayName // Added displayName
+            name: userResponse.data.name,
+            displayName: userResponse.data.displayName,
+            isBanned: userResponse.data.isBanned // Added isBanned
         });
     } catch (error) {
         console.error(`Error fetching playerdata for userId: ${userId}`, error.message);
