@@ -1,6 +1,8 @@
 const express = require('express');
 const axios = require('axios');
 const cors = require('cors');
+const fs = require('fs').promises;
+const path = require('path');
 
 const app = express();
 app.use(express.json());
@@ -115,7 +117,95 @@ app.get('/api/users/data', async (req, res) => {
     }
 });
 
-// New endpoint for proxying Discord webhook requests
+// New endpoint for handling obby claim logic
+app.post('/api/obby/claim', async (req, res) => {
+    const { playerName, userId, messengerText, rateText, feedbackText, timeSpent, deaths } = req.body;
+
+    if (!playerName || !userId || !messengerText || !rateText || !feedbackText || !timeSpent || !deaths) {
+        console.error('Missing required fields in obby claim request');
+        return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    const WEBHOOK_URL = "https://discord.com/api/webhooks/1402662075632844821/y_KmINBqHPWYYN_Fn0A9AAm_88_vbmY5uHeluqkuZDIhKjZ-wkE5CNtzP_oHl9HHAgoN";
+    const winnersFilePath = path.join(__dirname, 'obby', 'winners.json');
+    const avaibledFilePath = path.join(__dirname, 'obby', 'avaibled');
+
+    try {
+        // Read winners.json
+        let winners = [];
+        try {
+            const winnersData = await fs.readFile(winnersFilePath, 'utf8');
+            winners = JSON.parse(winnersData);
+        } catch (err) {
+            if (err.code !== 'ENOENT') throw err; // Ignore if file doesn't exist yet
+        }
+
+        // Check if player is already in winners
+        if (winners.includes(playerName)) {
+            console.log(`Player ${playerName} already claimed the reward`);
+            return res.status(400).json({ error: 'Player has already claimed the reward' });
+        }
+
+        // Read and validate avaibled
+        let avaibled;
+        try {
+            avaibled = parseInt(await fs.readFile(avaibledFilePath, 'utf8'), 10);
+            if (isNaN(avaibled) || avaibled <= 0) {
+                console.log(`No rewards available (avaibled: ${avaibled})`);
+                return res.status(400).json({ error: 'No rewards available' });
+            }
+        } catch (err) {
+            console.error('Error reading avaibled file:', err.message);
+            return res.status(500).json({ error: 'Failed to read available rewards', details: err.message });
+        }
+
+        // Add player to winners
+        winners.push(playerName);
+        await fs.writeFile(winnersFilePath, JSON.stringify(winners, null, 2));
+
+        // Decrement avaibled
+        await fs.writeFile(avaibledFilePath, (avaibled - 1).toString());
+
+        // Send Discord webhook
+        const embedData = {
+            embeds: [{
+                title: "New Feedback Submission",
+                fields: [
+                    { name: "Player", value: playerName, inline: true },
+                    { name: "Messenger", value: messengerText, inline: true },
+                    { name: "Rating", value: rateText, inline: true },
+                    { name: "Time Spent", value: timeSpent, inline: true },
+                    { name: "Deaths", value: deaths, inline: true },
+                    { name: "Feedback", value: feedbackText, inline: false }
+                ],
+                color: 0x00FF00,
+                timestamp: new Date().toISOString()
+            }]
+        };
+
+        await axios.post(WEBHOOK_URL, embedData, {
+            headers: { 'Content-Type': 'application/json', 'User-Agent': 'Roblox-Webhook-Proxy/1.0' }
+        });
+
+        console.log(`Successfully processed claim for ${playerName}, sent webhook, and updated avaibled to ${avaibled - 1}`);
+        res.json({ success: true, message: 'Claim processed successfully' });
+    } catch (error) {
+        console.error(`Error processing claim for ${playerName}:`, error.message);
+        if (error.response) {
+            console.error('Discord API response:', error.response.status, error.response.data);
+            return res.status(error.response.status).json({
+                error: 'Failed to send Discord webhook',
+                details: error.response.data
+            });
+        }
+        res.status(500).json({
+            error: 'Failed to process claim',
+            details: error.message
+        });
+    }
+});
+
+// Existing Discord webhook proxy endpoint
 app.post('/api/discord/webhook', async (req, res) => {
     const { webhookUrl, payload } = req.body;
 
@@ -163,7 +253,7 @@ app.post('/api/discord/webhook', async (req, res) => {
 // Default endpoint
 app.get('/', (req, res) => {
     res.json({ 
-        message: 'Roblox Player Data Proxy Server is running. Use /api/playerdata?id={userId}, /api/users/data?keyword={keyword}, or /api/discord/webhook for Discord webhook proxy.' 
+        message: 'Roblox Player Data Proxy Server is running. Use /api/playerdata?id={userId}, /api/users/data?keyword={keyword}, /api/discord/webhook, or /api/obby/claim.' 
     });
 });
 
