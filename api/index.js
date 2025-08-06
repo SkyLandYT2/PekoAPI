@@ -117,7 +117,12 @@ app.get('/api/users/data', async (req, res) => {
     }
 });
 
-// New endpoint for handling obby claim logic
+// New GET handler for /api/obby/claim to prevent 404
+app.get('/api/obby/claim', (req, res) => {
+    res.status(405).json({ error: 'Method Not Allowed', message: 'Use POST to submit a claim to /api/obby/claim' });
+});
+
+// Updated obby claim endpoint
 app.post('/api/obby/claim', async (req, res) => {
     const { playerName, userId, messengerText, rateText, feedbackText, timeSpent, deaths } = req.body;
 
@@ -135,9 +140,22 @@ app.post('/api/obby/claim', async (req, res) => {
         let winners = [];
         try {
             const winnersData = await fs.readFile(winnersFilePath, 'utf8');
-            winners = JSON.parse(winnersData);
+            // Check if file is empty or invalid JSON
+            if (winnersData.trim() === '') {
+                winners = [];
+            } else {
+                winners = JSON.parse(winnersData);
+                if (!Array.isArray(winners)) {
+                    winners = [];
+                }
+            }
         } catch (err) {
-            if (err.code !== 'ENOENT') throw err; // Ignore if file doesn't exist yet
+            if (err.code === 'ENOENT' || err.message.includes('Unexpected end of JSON input')) {
+                winners = []; // Initialize as empty array if file doesn't exist or is invalid
+            } else {
+                console.error('Error reading winners.json:', err.message);
+                return res.status(500).json({ error: 'Failed to read winners file', details: err.message });
+            }
         }
 
         // Check if player is already in winners
@@ -149,12 +167,17 @@ app.post('/api/obby/claim', async (req, res) => {
         // Read and validate avaibled
         let avaibled;
         try {
-            avaibled = parseInt(await fs.readFile(avaibledFilePath, 'utf8'), 10);
+            const avaibledData = await fs.readFile(avaibledFilePath, 'utf8');
+            avaibled = parseInt(avaibledData, 10);
             if (isNaN(avaibled) || avaibled <= 0) {
-                console.log(`No rewards available (avaibled: ${avaibled})`);
+                console.log(`No rewards available (avaibled: ${avaibledData})`);
                 return res.status(400).json({ error: 'No rewards available' });
             }
         } catch (err) {
+            if (err.code === 'ENOENT') {
+                console.error('avaibled file not found');
+                return res.status(500).json({ error: 'Failed to read available rewards', details: 'avaibled file not found' });
+            }
             console.error('Error reading avaibled file:', err.message);
             return res.status(500).json({ error: 'Failed to read available rewards', details: err.message });
         }
@@ -253,7 +276,7 @@ app.post('/api/discord/webhook', async (req, res) => {
 // Default endpoint
 app.get('/', (req, res) => {
     res.json({ 
-        message: 'Roblox Player Data Proxy Server is running. Use /api/playerdata?id={userId}, /api/users/data?keyword={keyword}, /api/discord/webhook, or /api/obby/claim.' 
+        message: 'Roblox Player Data Proxy Server is running. Use /api/playerdata?id={userId}, /api/users/data?keyword={keyword}, /api/discord/webhook, or /api/obby/claim (POST only).' 
     });
 });
 
