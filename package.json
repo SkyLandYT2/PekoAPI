@@ -1,7 +1,7 @@
 {
-    "name": "pekora-player-data",
+    "name": "PekoraPlayerData",
     "version": "1.0.0",
-    "description": "Roblox Player Data Proxy Server",
+    "description": "Pekora Player Data Proxy Server",
     "main": "api/index.js",
     "scripts": {
         "start": "node api/index.js"
