@@ -6,6 +6,7 @@ const app = express();
 app.use(express.json());
 app.use(cors({ origin: '*' }));
 
+// Existing playerdata endpoint
 app.get('/api/playerdata', async (req, res) => {
     const userId = parseInt(req.query.id, 10);
 
@@ -52,7 +53,7 @@ app.get('/api/playerdata', async (req, res) => {
             inventory_rap: userResponse.data.inventory_rap,
             name: userResponse.data.name,
             displayName: userResponse.data.displayName,
-            isBanned: userResponse.data.isBanned // Added isBanned
+            isBanned: userResponse.data.isBanned
         });
     } catch (error) {
         console.error(`Error fetching playerdata for userId: ${userId}`, error.message);
@@ -70,6 +71,7 @@ app.get('/api/playerdata', async (req, res) => {
     }
 });
 
+// Existing user search endpoint
 app.get('/api/users/data', async (req, res) => {
     const keyword = req.query.keyword;
 
@@ -113,8 +115,56 @@ app.get('/api/users/data', async (req, res) => {
     }
 });
 
+// New endpoint for proxying Discord webhook requests
+app.post('/api/discord/webhook', async (req, res) => {
+    const { webhookUrl, payload } = req.body;
+
+    if (!webhookUrl || typeof webhookUrl !== 'string' || !webhookUrl.startsWith('https://discord.com/api/webhooks/')) {
+        console.error('Invalid or missing webhookUrl in Discord webhook request');
+        return res.status(400).json({ error: 'Invalid or missing webhookUrl parameter' });
+    }
+
+    if (!payload || typeof payload !== 'object') {
+        console.error('Invalid or missing payload in Discord webhook request');
+        return res.status(400).json({ error: 'Invalid or missing payload parameter' });
+    }
+
+    console.log(`Received Discord webhook proxy request for URL: ${webhookUrl}`);
+
+    try {
+        const response = await axios.post(webhookUrl, payload, {
+            headers: {
+                'Content-Type': 'application/json',
+                'User-Agent': 'Roblox-Webhook-Proxy/1.0'
+            }
+        });
+
+        console.log(`Successfully sent Discord webhook for URL: ${webhookUrl}`);
+        res.status(200).json({
+            message: 'Webhook sent successfully',
+            discordResponse: response.data
+        });
+    } catch (error) {
+        console.error(`Error sending Discord webhook for URL: ${webhookUrl}`, error.message);
+        if (error.response) {
+            console.error('Discord API response:', error.response.status, error.response.data);
+            return res.status(error.response.status).json({
+                error: 'Failed to send Discord webhook',
+                details: error.response.data
+            });
+        }
+        res.status(500).json({
+            error: 'Failed to send Discord webhook',
+            details: error.message
+        });
+    }
+});
+
+// Default endpoint
 app.get('/', (req, res) => {
-    res.json({ message: 'Roblox Player Data Proxy Server is running. Use /api/playerdata?id={userId} or /api/users/data?keyword={keyword}.' });
+    res.json({ 
+        message: 'Roblox Player Data Proxy Server is running. Use /api/playerdata?id={userId}, /api/users/data?keyword={keyword}, or /api/discord/webhook for Discord webhook proxy.' 
+    });
 });
 
 module.exports = app;
