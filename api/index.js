@@ -12,9 +12,9 @@ const octokit = new Octokit({
     auth: process.env.GITHUB_TOKEN
 });
 
-// GitHub repository details (replace with your own)
+// GitHub repository details
 const repoConfig = {
-    owner: 'your-github-username', // Replace with your GitHub username
+    owner: 'SkyLandYT2', // Replace with your GitHub username
     repo: 'pekora-player-data',    // Replace with your repository name
     branch: 'main'                 // Replace with your branch name
 };
@@ -147,6 +147,7 @@ app.post('/api/obby/claim', async (req, res) => {
     try {
         // Read winners.json from GitHub
         let winners = [];
+        let winnersSha;
         try {
             const winnersResponse = await octokit.repos.getContent({
                 owner: repoConfig.owner,
@@ -155,6 +156,7 @@ app.post('/api/obby/claim', async (req, res) => {
                 ref: repoConfig.branch
             });
             winners = JSON.parse(Buffer.from(winnersResponse.data.content, 'base64').toString('utf8'));
+            winnersSha = winnersResponse.data.sha;
             if (!Array.isArray(winners)) {
                 winners = [];
             }
@@ -175,6 +177,7 @@ app.post('/api/obby/claim', async (req, res) => {
 
         // Read avaibled from GitHub
         let avaibled;
+        let avaibledSha;
         try {
             const avaibledResponse = await octokit.repos.getContent({
                 owner: repoConfig.owner,
@@ -183,36 +186,40 @@ app.post('/api/obby/claim', async (req, res) => {
                 ref: repoConfig.branch
             });
             avaibled = parseInt(Buffer.from(avaibledResponse.data.content, 'base64').toString('utf8'), 10);
+            avaibledSha = avaibledResponse.data.sha;
             if (isNaN(avaibled) || avaibled <= 0) {
                 console.log(`No rewards available (avaibled: ${avaibled})`);
                 return res.status(400).json({ error: 'No rewards available' });
             }
         } catch (err) {
             if (err.status === 404) {
-                console.error('avaibled file not found');
-                return res.status(500).json({ error: 'Failed to read available rewards', details: 'avaibled file not found' });
+                // Initialize avaibled with default value
+                avaibled = 10;
+                await octokit.repos.createOrUpdateFileContents({
+                    owner: repoConfig.owner,
+                    repo: repoConfig.repo,
+                    path: 'api/obby/avaibled',
+                    message: `Initialize avaibled with ${avaibled}`,
+                    content: Buffer.from(avaibled.toString()).toString('base64'),
+                    branch: repoConfig.branch
+                });
+            } else {
+                console.error('Error reading avaibled file from GitHub:', err.message);
+                return res.status(500).json({ error: 'Failed to read available rewards', details: err.message });
             }
-            console.error('Error reading avaibled file from GitHub:', err.message);
-            return res.status(500).json({ error: 'Failed to read available rewards', details: err.message });
         }
 
         // Update winners.json
         winners.push(playerName);
         const winnersContent = JSON.stringify(winners, null, 2);
         try {
-            const winnersFile = await octokit.repos.getContent({
-                owner: repoConfig.owner,
-                repo: repoConfig.repo,
-                path: 'api/obby/winners.json',
-                ref: repoConfig.branch
-            });
             await octokit.repos.createOrUpdateFileContents({
                 owner: repoConfig.owner,
                 repo: repoConfig.repo,
                 path: 'api/obby/winners.json',
                 message: `Add ${playerName} to winners.json`,
                 content: Buffer.from(winnersContent).toString('base64'),
-                sha: winnersFile.data.sha,
+                sha: winnersSha,
                 branch: repoConfig.branch
             });
         } catch (err) {
@@ -233,37 +240,15 @@ app.post('/api/obby/claim', async (req, res) => {
 
         // Update avaibled
         const newAvaibled = (avaibled - 1).toString();
-        try {
-            const avaibledFile = await octokit.repos.getContent({
-                owner: repoConfig.owner,
-                repo: repoConfig.repo,
-                path: 'api/obby/avaibled',
-                ref: repoConfig.branch
-            });
-            await octokit.repos.createOrUpdateFileContents({
-                owner: repoConfig.owner,
-                repo: repoConfig.repo,
-                path: 'api/obby/avaibled',
-                message: `Decrement avaibled to ${newAvaibled}`,
-                content: Buffer.from(newAvaibled).toString('base64'),
-                sha: avaibledFile.data.sha,
-                branch: repoConfig.branch
-            });
-        } catch (err) {
-            if (err.status === 404) {
-                // File doesn't exist, create it
-                await octokit.repos.createOrUpdateFileContents({
-                    owner: repoConfig.owner,
-                    repo: repoConfig.repo,
-                    path: 'api/obby/avaibled',
-                    message: `Create avaibled with ${newAvaibled}`,
-                    content: Buffer.from(newAvaibled).toString('base64'),
-                    branch: repoConfig.branch
-                });
-            } else {
-                throw err;
-            }
-        }
+        await octokit.repos.createOrUpdateFileContents({
+            owner: repoConfig.owner,
+            repo: repoConfig.repo,
+            path: 'api/obby/avaibled',
+            message: `Decrement avaibled to ${newAvaibled}`,
+            content: Buffer.from(newAvaibled).toString('base64'),
+            sha: avaibledSha,
+            branch: repoConfig.branch
+        });
 
         // Send Discord webhook
         const embedData = {
