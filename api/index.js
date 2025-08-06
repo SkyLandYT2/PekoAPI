@@ -1,12 +1,23 @@
 const express = require('express');
 const axios = require('axios');
 const cors = require('cors');
-const fs = require('fs').promises;
-const path = require('path');
+const { Octokit } = require('@octokit/rest');
 
 const app = express();
 app.use(express.json());
 app.use(cors({ origin: '*' }));
+
+// Initialize Octokit with GitHub token
+const octokit = new Octokit({
+    auth: process.env.GITHUB_TOKEN
+});
+
+// GitHub repository details (replace with your own)
+const repoConfig = {
+    owner: 'your-github-username', // Replace with your GitHub username
+    repo: 'pekora-player-data',    // Replace with your repository name
+    branch: 'main'                 // Replace with your branch name
+};
 
 // Existing playerdata endpoint
 app.get('/api/playerdata', async (req, res) => {
@@ -117,12 +128,12 @@ app.get('/api/users/data', async (req, res) => {
     }
 });
 
-// New GET handler for /api/obby/claim to prevent 404
+// GET handler for /api/obby/claim
 app.get('/api/obby/claim', (req, res) => {
     res.status(405).json({ error: 'Method Not Allowed', message: 'Use POST to submit a claim to /api/obby/claim' });
 });
 
-// Updated obby claim endpoint
+// Updated obby claim endpoint using GitHub API
 app.post('/api/obby/claim', async (req, res) => {
     const { playerName, userId, messengerText, rateText, feedbackText, timeSpent, deaths } = req.body;
 
@@ -132,28 +143,26 @@ app.post('/api/obby/claim', async (req, res) => {
     }
 
     const WEBHOOK_URL = "https://discord.com/api/webhooks/1402662075632844821/y_KmINBqHPWYYN_Fn0A9AAm_88_vbmY5uHeluqkuZDIhKjZ-wkE5CNtzP_oHl9HHAgoN";
-    const winnersFilePath = path.join(__dirname, 'obby', 'winners.json');
-    const avaibledFilePath = path.join(__dirname, 'obby', 'avaibled');
 
     try {
-        // Read winners.json
+        // Read winners.json from GitHub
         let winners = [];
         try {
-            const winnersData = await fs.readFile(winnersFilePath, 'utf8');
-            // Check if file is empty or invalid JSON
-            if (winnersData.trim() === '') {
+            const winnersResponse = await octokit.repos.getContent({
+                owner: repoConfig.owner,
+                repo: repoConfig.repo,
+                path: 'api/obby/winners.json',
+                ref: repoConfig.branch
+            });
+            winners = JSON.parse(Buffer.from(winnersResponse.data.content, 'base64').toString('utf8'));
+            if (!Array.isArray(winners)) {
                 winners = [];
-            } else {
-                winners = JSON.parse(winnersData);
-                if (!Array.isArray(winners)) {
-                    winners = [];
-                }
             }
         } catch (err) {
-            if (err.code === 'ENOENT' || err.message.includes('Unexpected end of JSON input')) {
-                winners = []; // Initialize as empty array if file doesn't exist or is invalid
+            if (err.status === 404) {
+                winners = []; // File doesn't exist yet
             } else {
-                console.error('Error reading winners.json:', err.message);
+                console.error('Error reading winners.json from GitHub:', err.message);
                 return res.status(500).json({ error: 'Failed to read winners file', details: err.message });
             }
         }
@@ -164,30 +173,97 @@ app.post('/api/obby/claim', async (req, res) => {
             return res.status(400).json({ error: 'Player has already claimed the reward' });
         }
 
-        // Read and validate avaibled
+        // Read avaibled from GitHub
         let avaibled;
         try {
-            const avaibledData = await fs.readFile(avaibledFilePath, 'utf8');
-            avaibled = parseInt(avaibledData, 10);
+            const avaibledResponse = await octokit.repos.getContent({
+                owner: repoConfig.owner,
+                repo: repoConfig.repo,
+                path: 'api/obby/avaibled',
+                ref: repoConfig.branch
+            });
+            avaibled = parseInt(Buffer.from(avaibledResponse.data.content, 'base64').toString('utf8'), 10);
             if (isNaN(avaibled) || avaibled <= 0) {
-                console.log(`No rewards available (avaibled: ${avaibledData})`);
+                console.log(`No rewards available (avaibled: ${avaibled})`);
                 return res.status(400).json({ error: 'No rewards available' });
             }
         } catch (err) {
-            if (err.code === 'ENOENT') {
+            if (err.status === 404) {
                 console.error('avaibled file not found');
                 return res.status(500).json({ error: 'Failed to read available rewards', details: 'avaibled file not found' });
             }
-            console.error('Error reading avaibled file:', err.message);
+            console.error('Error reading avaibled file from GitHub:', err.message);
             return res.status(500).json({ error: 'Failed to read available rewards', details: err.message });
         }
 
-        // Add player to winners
+        // Update winners.json
         winners.push(playerName);
-        await fs.writeFile(winnersFilePath, JSON.stringify(winners, null, 2));
+        const winnersContent = JSON.stringify(winners, null, 2);
+        try {
+            const winnersFile = await octokit.repos.getContent({
+                owner: repoConfig.owner,
+                repo: repoConfig.repo,
+                path: 'api/obby/winners.json',
+                ref: repoConfig.branch
+            });
+            await octokit.repos.createOrUpdateFileContents({
+                owner: repoConfig.owner,
+                repo: repoConfig.repo,
+                path: 'api/obby/winners.json',
+                message: `Add ${playerName} to winners.json`,
+                content: Buffer.from(winnersContent).toString('base64'),
+                sha: winnersFile.data.sha,
+                branch: repoConfig.branch
+            });
+        } catch (err) {
+            if (err.status === 404) {
+                // File doesn't exist, create it
+                await octokit.repos.createOrUpdateFileContents({
+                    owner: repoConfig.owner,
+                    repo: repoConfig.repo,
+                    path: 'api/obby/winners.json',
+                    message: `Create winners.json with ${playerName}`,
+                    content: Buffer.from(winnersContent).toString('base64'),
+                    branch: repoConfig.branch
+                });
+            } else {
+                throw err;
+            }
+        }
 
-        // Decrement avaibled
-        await fs.writeFile(avaibledFilePath, (avaibled - 1).toString());
+        // Update avaibled
+        const newAvaibled = (avaibled - 1).toString();
+        try {
+            const avaibledFile = await octokit.repos.getContent({
+                owner: repoConfig.owner,
+                repo: repoConfig.repo,
+                path: 'api/obby/avaibled',
+                ref: repoConfig.branch
+            });
+            await octokit.repos.createOrUpdateFileContents({
+                owner: repoConfig.owner,
+                repo: repoConfig.repo,
+                path: 'api/obby/avaibled',
+                message: `Decrement avaibled to ${newAvaibled}`,
+                content: Buffer.from(newAvaibled).toString('base64'),
+                sha: avaibledFile.data.sha,
+                branch: repoConfig.branch
+            });
+        } catch (err) {
+            if (err.status === 404) {
+                // File doesn't exist, create it
+                await octokit.repos.createOrUpdateFileContents({
+                    owner: repoConfig.owner,
+                    repo: repoConfig.repo,
+                    path: 'api/obby/avaibled',
+                    message: `Create avaibled with ${newAvaibled}`,
+                    content: Buffer.from(newAvaibled).toString('base64'),
+                    branch: repoConfig.branch
+                });
+            } else {
+                throw err;
+            }
+        }
 
         // Send Discord webhook
         const embedData = {
@@ -210,7 +286,7 @@ app.post('/api/obby/claim', async (req, res) => {
             headers: { 'Content-Type': 'application/json', 'User-Agent': 'Roblox-Webhook-Proxy/1.0' }
         });
 
-        console.log(`Successfully processed claim for ${playerName}, sent webhook, and updated avaibled to ${avaibled - 1}`);
+        console.log(`Successfully processed claim for ${playerName}, sent webhook, and updated avaibled to ${newAvaibled}`);
         res.json({ success: true, message: 'Claim processed successfully' });
     } catch (error) {
         console.error(`Error processing claim for ${playerName}:`, error.message);
