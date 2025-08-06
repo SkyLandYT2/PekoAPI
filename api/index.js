@@ -15,7 +15,7 @@ const octokit = new Octokit({
 // GitHub repository details
 const repoConfig = {
     owner: 'SkyLandYT2', // Replace with your GitHub username
-    repo: 'pekora-player-data',    // Replace with your repository name
+    repo: 'PekoraPlayerData',    // Replace with your repository name
     branch: 'main'                 // Replace with your branch name
 };
 
