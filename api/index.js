@@ -19,7 +19,7 @@ const octokit = new Octokit({
 // GitHub repository details
 const repoConfig = {
     owner: 'SkyLandYT2', // Replace with your GitHub username
-    repo: 'PekoraPlayerData',    // Replace with your repository name
+    repo: 'PekoAPI',    // Replace with your repository name
     branch: 'main'                 // Replace with your branch name
 };
 
@@ -31,7 +31,7 @@ app.use('/api/discord/webhook', webhookRoutes);
 // Default endpoint
 app.get('/', (req, res) => {
     res.json({ 
-        message: 'Roblox Player Data Proxy Server is running. Use /api/playerdata?id={userId}, /api/search/users?keyword={keyword}, /api/search/groups?keyword={keyword}, /api/search/games?keyword={keyword}, or /api/discord/webhook.' 
+        message: 'Pekora Player Data Proxy Server is running. Use /api/playerdata?id={userId}, /api/search/users?keyword={keyword}, /api/search/groups?keyword={keyword}, /api/search/games?keyword={keyword}, or /api/discord/webhook.' 
     });
 });
 

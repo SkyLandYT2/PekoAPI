@@ -1,5 +1,5 @@
 {
-    "name": "PekoraPlayerData",
+    "name": "PekoAPI",
     "version": "1.0.0",
     "description": "Pekora Player Data Proxy Server",
     "main": "api/index.js",

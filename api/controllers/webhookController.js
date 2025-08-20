@@ -19,7 +19,7 @@ const sendDiscordWebhook = async (req, res) => {
         const response = await axios.post(webhookUrl, payload, {
             headers: {
                 'Content-Type': 'application/json',
-                'User-Agent': 'Roblox-Webhook-Proxy/1.0'
+                'User-Agent': 'Pekora-Webhook-Proxy/1.0'
             }
         });
 
