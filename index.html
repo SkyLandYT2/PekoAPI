@@ -263,33 +263,6 @@
             color: var(--text-secondary);
         }
 
-        .history-item {
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 1rem;
-            margin-bottom: 1rem;
-        }
-
-        .history-header {
-            display: flex;
-            align-items: center;
-            justify-content: between;
-            gap: 1rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .history-info {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .history-time {
-            color: var(--text-secondary);
-            font-size: 0.875rem;
-            margin-left: auto;
-        }
-
         .endpoint-item {
             border: 1px solid var(--border-color);
             border-radius: 8px;
@@ -378,9 +351,6 @@
                 <button class="tab-button active" onclick="switchTab('testing')">
                     <span class="icon">🧪</span> API Testing
                 </button>
-                <button class="tab-button" onclick="switchTab('history')">
-                    <span class="icon">📜</span> Request History
-                </button>
                 <button class="tab-button" onclick="switchTab('documentation')">
                     <span class="icon">📖</span> Documentation
                 </button>
@@ -394,7 +364,7 @@
                 <div class="card">
                     <div class="card-header">
                         <h2 class="card-title">
-                            <span class="icon">📤</span> API Request
+                            API Request
                         </h2>
                         <p class="card-description">Configure and send requests to Pekora API endpoints</p>
                     </div>
@@ -431,7 +401,7 @@
                 <div class="card">
                     <div class="card-header">
                         <h2 class="card-title">
-                            <span class="icon">📋</span> Response
+                            Response
                         </h2>
                         <p class="card-description">API response will appear here</p>
                     </div>
@@ -452,24 +422,6 @@
                     
                     <div id="empty-response" class="empty-state">
                         No response yet. Send a request to see results.
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- History Tab -->
-        <div id="history" class="tab-content">
-            <div class="card">
-                <div class="card-header">
-                    <h2 class="card-title">
-                        <span class="icon">📜</span> Request History
-                    </h2>
-                    <p class="card-description">Recent API requests and their responses</p>
-                </div>
-                
-                <div id="history-list">
-                    <div class="empty-state">
-                        No requests made yet. Start testing APIs to see history here.
                     </div>
                 </div>
             </div>
@@ -532,8 +484,6 @@
     </div>
 
     <script>
-        let requestHistory = [];
-        
         const endpoints = {
             '/api/playerdata': { description: 'Get player data by user ID', method: 'GET', paramType: 'User ID' },
             '/api/search/users': { description: 'Search for users by keyword', method: 'GET', paramType: 'Keyword' },
@@ -634,11 +584,9 @@
                 const data = await response.json();
                 showResponse(data);
                 showSuccess();
-                addToHistory(endpoint, endpoints[endpoint].method, 'success', data);
                 
             } catch (error) {
                 showError(error.message);
-                addToHistory(endpoint, endpoints[endpoint].method, 'error', null, error.message);
             } finally {
                 // Reset button
                 sendBtn.disabled = false;
@@ -676,46 +624,6 @@
         function hideAlerts() {
             document.getElementById('error-alert').classList.add('hidden');
             document.getElementById('success-alert').classList.add('hidden');
-        }
-
-        function addToHistory(endpoint, method, status, response, error) {
-            const historyItem = {
-                id: Date.now(),
-                endpoint,
-                method,
-                status,
-                response,
-                error,
-                timestamp: new Date()
-            };
-            
-            requestHistory.unshift(historyItem);
-            requestHistory = requestHistory.slice(0, 10); // Keep last 10 requests
-            
-            renderHistory();
-        }
-
-        function renderHistory() {
-            const historyList = document.getElementById('history-list');
-            
-            if (requestHistory.length === 0) {
-                historyList.innerHTML = '<div class="empty-state">No requests made yet. Start testing APIs to see history here.</div>';
-                return;
-            }
-            
-            historyList.innerHTML = requestHistory.map(request => `
-                <div class="history-item">
-                    <div class="history-header">
-                        <div class="history-info">
-                            <span class="badge badge-outline">${request.method}</span>
-                            <code>${request.endpoint}</code>
-                            <span class="badge ${request.status === 'success' ? 'badge-success' : 'badge-error'}">${request.status}</span>
-                        </div>
-                        <span class="history-time">${request.timestamp.toLocaleTimeString()}</span>
-                    </div>
-                    ${request.error ? `<p style="color: var(--error-color); font-size: 0.875rem;">${request.error}</p>` : ''}
-                </div>
-            `).join('');
         }
     </script>
 </body>
