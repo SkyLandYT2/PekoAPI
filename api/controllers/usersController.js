@@ -8,17 +8,17 @@ const searchUsers = async (req, res) => {
         return res.status(400).json({ error: 'Invalid or missing keyword parameter' });
     }
 
-    const robloxSecurityCookie = process.env.ROBLOSECURITY_COOKIE;
+    const PEKOSECURITY = process.env.PEKOSECURITY;
 
     console.log(`Received user search request for keyword: ${keyword}`);
 
-    if (!robloxSecurityCookie) {
-        console.error('Missing ROBLOSECURITY_COOKIE for user search request');
-        return res.status(500).json({ error: 'Server configuration error: Missing ROBLOSECURITY_COOKIE' });
+    if (!PEKOSECURITY) {
+        console.error('Missing PEKOSECURITY for user search request');
+        return res.status(500).json({ error: 'Server configuration error: Missing PEKOSECURITY' });
     }
 
     const headers = {
-        'Cookie': `.ROBLOSECURITY=${robloxSecurityCookie}`,
+        'Cookie': `.PEKOSECURITY=${PEKOSECURITY}`,
         'User-Agent': 'Roblox/WinInet'
     };
 
@@ -51,17 +51,17 @@ const searchGroups = async (req, res) => {
         return res.status(400).json({ error: 'Invalid or missing keyword parameter' });
     }
 
-    const robloxSecurityCookie = process.env.ROBLOSECURITY_COOKIE;
+    const PEKOSECURITY = process.env.PEKOSECURITY;
 
     console.log(`Received group search request for keyword: ${keyword}`);
 
-    if (!robloxSecurityCookie) {
-        console.error('Missing ROBLOSECURITY_COOKIE for group search request');
-        return res.status(500).json({ error: 'Server configuration error: Missing ROBLOSECURITY_COOKIE' });
+    if (!PEKOSECURITY) {
+        console.error('Missing PEKOSECURITY for group search request');
+        return res.status(500).json({ error: 'Server configuration error: Missing PEKOSECURITY' });
     }
 
     const headers = {
-        'Cookie': `.ROBLOSECURITY=${robloxSecurityCookie}`,
+        'Cookie': `.PEKOSECURITY=${PEKOSECURITY}`,
         'User-Agent': 'Roblox/WinInet'
     };
 
@@ -90,25 +90,25 @@ const searchGames = async (req, res) => {
     const keyword = req.query.keyword;
 
     console.log(`[DEBUG] Received game search request for keyword: ${keyword}`);
-    console.log(`[DEBUG] Environment ROBLOSECURITY_COOKIE exists: ${!!process.env.ROBLOSECURITY_COOKIE}`);
+    console.log(`[DEBUG] Environment PEKOSECURITY exists: ${!!process.env.PEKOSECURITY}`);
 
     if (!keyword || typeof keyword !== 'string' || keyword.trim() === '') {
         console.error('Invalid or missing keyword for game search request');
         return res.status(400).json({ error: 'Invalid or missing keyword parameter' });
     }
 
-    const robloxSecurityCookie = process.env.ROBLOSECURITY_COOKIE;
+    const PEKOSECURITY = process.env.PEKOSECURITY;
 
-    if (!robloxSecurityCookie) {
-        console.error('Missing ROBLOSECURITY_COOKIE for game search request');
+    if (!PEKOSECURITY) {
+        console.error('Missing PEKOSECURITY for game search request');
         return res.status(500).json({ 
-            error: 'Server configuration error: Missing ROBLOSECURITY_COOKIE',
-            debug: 'Please set the ROBLOSECURITY_COOKIE environment variable'
+            error: 'Server configuration error: Missing PEKOSECURITY',
+            debug: 'Please set the PEKOSECURITY environment variable'
         });
     }
 
     const headers = {
-        'Cookie': `.ROBLOSECURITY=${robloxSecurityCookie}`,
+        'Cookie': `.PEKOSECURITY=${PEKOSECURITY}`,
         'User-Agent': 'Roblox/WinInet'
     };
 

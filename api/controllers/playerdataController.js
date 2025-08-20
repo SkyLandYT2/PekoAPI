@@ -8,17 +8,17 @@ const getPlayerData = async (req, res) => {
         return res.status(400).json({ error: 'Invalid or missing userId parameter' });
     }
 
-    const robloxSecurityCookie = process.env.ROBLOSECURITY_COOKIE;
+    const PEKOSECURITY = process.env.PEKOSECURITY;
 
     console.log(`Received playerdata request for userId: ${userId}`);
 
-    if (!robloxSecurityCookie) {
-        console.error('Missing ROBLOSECURITY_COOKIE for playerdata request');
-        return res.status(500).json({ error: 'Server configuration error: Missing ROBLOSECURITY_COOKIE' });
+    if (!PEKOSECURITY) {
+        console.error('Missing PEKOSECURITY for playerdata request');
+        return res.status(500).json({ error: 'Server configuration error: Missing PEKOSECURITY' });
     }
 
     const headers = {
-        'Cookie': `.ROBLOSECURITY=${robloxSecurityCookie}`,
+        'Cookie': `.PEKOSECURITY=${PEKOSECURITY}`,
         'User-Agent': 'Roblox/WinInet'
     };
 
