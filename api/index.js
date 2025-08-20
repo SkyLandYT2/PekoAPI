@@ -35,4 +35,20 @@ app.get('/', (req, res) => {
     });
 });
 
+const PORT = process.env.PORT || 3000;
+
+// Only start the server if this file is run directly (not imported)
+if (require.main === module) {
+    app.listen(PORT, () => {
+        console.log(`Server is running on port ${PORT}`);
+        console.log(`Available endpoints:`);
+        console.log(`- GET / - API documentation`);
+        console.log(`- GET /api/playerdata?id={userId} - Player data`);
+        console.log(`- GET /api/search/users?keyword={keyword} - Search users`);
+        console.log(`- GET /api/search/groups?keyword={keyword} - Search groups`);
+        console.log(`- GET /api/search/games?keyword={keyword} - Search games`);
+        console.log(`- POST /api/discord/webhook - Discord webhook`);
+    });
+}
+
 module.exports = app;
