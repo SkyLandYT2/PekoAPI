@@ -19,7 +19,7 @@ const searchUsers = async (req, res) => {
 
     const headers = {
         'Cookie': `.PEKOSECURITY=${PEKOSECURITY}`,
-        'User-Agent': 'Roblox/WinInet'
+        'User-Agent': 'Pekora/WinInet'
     };
 
     try {
@@ -62,7 +62,7 @@ const searchGroups = async (req, res) => {
 
     const headers = {
         'Cookie': `.PEKOSECURITY=${PEKOSECURITY}`,
-        'User-Agent': 'Roblox/WinInet'
+        'User-Agent': 'Pekora/WinInet'
     };
 
     try {
@@ -105,7 +105,7 @@ const searchGames = async (req, res) => {
 
     const headers = {
         'Cookie': `.PEKOSECURITY=${PEKOSECURITY}`,
-        'User-Agent': 'Roblox/WinInet'
+        'User-Agent': 'Pekora/WinInet'
     };
 
     try {

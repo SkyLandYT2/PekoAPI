@@ -19,7 +19,7 @@ const searchUsers = async (req, res) => {
 
     const headers = {
         'Cookie': `.PEKOSECURITY=${PEKOSECURITY}`,
-        'User-Agent': 'Roblox/WinInet'
+        'User-Agent': 'Pekora/WinInet'
     };
 
     try {
@@ -62,7 +62,7 @@ const searchGroups = async (req, res) => {
 
     const headers = {
         'Cookie': `.PEKOSECURITY=${PEKOSECURITY}`,
-        'User-Agent': 'Roblox/WinInet'
+        'User-Agent': 'Pekora/WinInet'
     };
 
     try {
@@ -109,7 +109,7 @@ const searchGames = async (req, res) => {
 
     const headers = {
         'Cookie': `.PEKOSECURITY=${PEKOSECURITY}`,
-        'User-Agent': 'Roblox/WinInet'
+        'User-Agent': 'Pekora/WinInet'
     };
 
     const url = `https://www.pekora.zip/apisite/games/v1/games/list?sortToken=&maxRows=100&genre=&keyword=${encodeURIComponent(keyword)}`;
