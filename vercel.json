@@ -6,17 +6,14 @@
             "destination": "/api/index"
         },
         {
-            "source": "/api/users/data",
+            "source": "/api/search/users",
             "destination": "/api/index"
         },
         {
             "source": "/api/discord/webhook",
             "destination": "/api/index"
         },
-        {
-            "source": "/api/obby/claim",
-            "destination": "/api/index"
-        },
+
         {
             "source": "/",
             "destination": "/api/index"
