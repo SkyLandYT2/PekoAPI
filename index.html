@@ -3,150 +3,720 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pekora API Proxy</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Pekora API Proxy - Enhanced</title>
     <style>
-        pre {
-            background-color: #1f2937;
-            color: #e5e7eb;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-color: #3b82f6;
+            --primary-hover: #2563eb;
+            --secondary-color: #64748b;
+            --success-color: #10b981;
+            --error-color: #ef4444;
+            --warning-color: #f59e0b;
+            --background: #f8fafc;
+            --card-background: #ffffff;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --border-color: #e2e8f0;
+            --gradient-from: #dbeafe;
+            --gradient-to: #e0e7ff;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, var(--gradient-from), var(--gradient-to));
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary-color), #6366f1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 1rem;
+        }
+
+        .header p {
+            font-size: 1.125rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .tabs {
+            margin-bottom: 2rem;
+        }
+
+        .tab-buttons {
+            display: flex;
+            background: var(--card-background);
+            border-radius: 8px;
+            padding: 4px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .tab-button {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            border-radius: 6px;
+            font-weight: 500;
+            transition: all 0.2s;
+            color: var(--text-secondary);
+        }
+
+        .tab-button.active {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .card {
+            background: var(--card-background);
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+
+        .card-header {
+            margin-bottom: 1.5rem;
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .card-description {
+            color: var(--text-secondary);
+        }
+
+        .grid {
+            display: grid;
+            gap: 2rem;
+        }
+
+        .grid-2 {
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+
+        .form-input, .form-select, .form-textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.2s;
+        }
+
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        .form-textarea {
+            resize: vertical;
+            font-family: 'Courier New', monospace;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: var(--primary-hover);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn-full {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .badge-outline {
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+        }
+
+        .badge-success {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .badge-error {
+            background: #fef2f2;
+            color: #991b1b;
+        }
+
+        .alert {
             padding: 1rem;
-            border-radius: 0.5rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .alert-error {
+            background: #fef2f2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+
+        .alert-success {
+            background: #f0fdf4;
+            color: #166534;
+            border: 1px solid #bbf7d0;
+        }
+
+        .response-container {
+            background: #0f172a;
+            color: #e2e8f0;
+            padding: 1.5rem;
+            border-radius: 8px;
             overflow-x: auto;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .response-container pre {
+            margin: 0;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            line-height: 1.4;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-secondary);
+        }
+
+        .history-item {
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .history-header {
+            display: flex;
+            align-items: center;
+            justify-content: between;
+            gap: 1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .history-info {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .history-time {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            margin-left: auto;
+        }
+
+        .endpoint-item {
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .endpoint-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .endpoint-code {
+            background: var(--background);
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 1rem;
+            height: 1rem;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .icon {
+            width: 1.25rem;
+            height: 1.25rem;
+            display: inline-block;
+        }
+
+        .note {
+            background: #dbeafe;
+            color: #1e40af;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 1.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+            
+            .tab-buttons {
+                flex-direction: column;
+            }
+        }
+
+        .hidden {
+            display: none !important;
         }
     </style>
 </head>
-<body class="bg-gray-100 font-sans text-gray-800">
-    <div class="max-w-4xl mx-auto p-6">
-        <h1 class="text-3xl font-bold text-blue-600 text-center mb-6">Pekora API Proxy</h1>
-        <p class="text-lg mb-6 text-justify">
-            Welcome to the Pekora API Proxy! This service allows you to access the Pekora Player Data API, retrieve player data, search for users, groups, and games, and send Discord webhooks without CORS issues. Use the form below to test API endpoints directly.
-        </p>
-
-        <div class="bg-white p-6 rounded-lg shadow-md mb-6">
-            <h2 class="text-xl font-semibold text-gray-800 border-b-2 border-blue-600 pb-2 mb-4">Test API Endpoints</h2>
-            <div class="space-y-4">
-                <div>
-                    <label for="endpoint" class="block text-sm font-medium text-gray-700">Select Endpoint</label>
-                    <select id="endpoint" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
-                        <option value="/api/playerdata">/api/playerdata?id={userId}</option>
-                        <option value="/api/search/users">/api/search/users?keyword={keyword}</option>
-                        <option value="/api/search/groups">/api/search/groups?keyword={keyword}</option>
-                        <option value="/api/search/games">/api/search/games?keyword={keyword}</option>
-                        <option value="/api/discord/webhook">/api/discord/webhook</option>
-                    </select>
-                </div>
-                <div id="param-section" class="hidden">
-                    <label for="param" class="block text-sm font-medium text-gray-700">Parameter</label>
-                    <input type="text" id="param" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" placeholder="Enter userId or keyword">
-                </div>
-                <div id="webhook-section" class="hidden">
-                    <label for="webhook-url" class="block text-sm font-medium text-gray-700">Discord Webhook URL</label>
-                    <input type="url" id="webhook-url" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" placeholder="https://discord.com/api/webhooks/...">
-                    <label for="webhook-message" class="block text-sm font-medium text-gray-700 mt-4">Message Content</label>
-                    <textarea id="webhook-message" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" rows="4" placeholder="Enter your message"></textarea>
-                </div>
-                <button id="send-request" class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">Send Request</button>
-            </div>
-            <div id="response-section" class="mt-6 hidden">
-                <h3 class="text-lg font-semibold text-gray-800">Response</h3>
-                <pre id="response" class="mt-2"></pre>
-            </div>
-            <p id="error" class="mt-4 text-red-600 hidden"></p>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>Pekora API Proxy</h1>
+            <p>Enhanced interface for testing Pekora Player Data API endpoints with modern design</p>
         </div>
 
-        <div class="bg-white p-6 rounded-lg shadow-md">
-            <h2 class="text-xl font-semibold text-gray-800 border-b-2 border-blue-600 pb-2 mb-4">API Endpoints</h2>
-            <ul class="space-y-2">
-                <li class="bg-blue-50 p-3 rounded-md"><code>/api/playerdata?id={userId}</code> - Retrieves player data for a specified user ID.</li>
-                <li class="bg-blue-50 p-3 rounded-md"><code>/api/search/users?keyword={keyword}</code> - Searches for users based on a keyword.</li>
-                <li class="bg-blue-50 p-3 rounded-md"><code>/api/search/groups?keyword={keyword}</code> - Searches for groups using a keyword.</li>
-                <li class="bg-blue-50 p-3 rounded-md"><code>/api/search/games?keyword={keyword}</code> - Searches for games based on a keyword.</li>
-                <li class="bg-blue-50 p-3 rounded-md"><code>/api/discord/webhook</code> - Sends a webhook to a Discord channel.</li>
-            </ul>
-            <p class="mt-4 italic text-gray-600">Note: Replace <code>{userId}</code> or <code>{keyword}</code> with appropriate values in the form above. For Discord webhooks, provide a valid webhook URL and message.</p>
+        <!-- Tabs -->
+        <div class="tabs">
+            <div class="tab-buttons">
+                <button class="tab-button active" onclick="switchTab('testing')">
+                    <span class="icon">🧪</span> API Testing
+                </button>
+                <button class="tab-button" onclick="switchTab('history')">
+                    <span class="icon">📜</span> Request History
+                </button>
+                <button class="tab-button" onclick="switchTab('documentation')">
+                    <span class="icon">📖</span> Documentation
+                </button>
+            </div>
+        </div>
+
+        <!-- Testing Tab -->
+        <div id="testing" class="tab-content active">
+            <div class="grid grid-2">
+                <!-- Request Form -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">
+                            <span class="icon">📤</span> API Request
+                        </h2>
+                        <p class="card-description">Configure and send requests to Pekora API endpoints</p>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="endpoint">Select Endpoint</label>
+                        <select id="endpoint" class="form-select" onchange="onEndpointChange()">
+                            <option value="">Choose an API endpoint</option>
+                            <option value="/api/playerdata">Player Data</option>
+                            <option value="/api/search/users">Search Users</option>
+                            <option value="/api/search/groups">Search Groups</option>
+                            <option value="/api/search/games">Search Games</option>
+                            <option value="/api/discord/webhook">Discord Webhook</option>
+                        </select>
+                        <p id="endpoint-description" class="card-description" style="margin-top: 0.5rem;"></p>
+                    </div>
+
+                    <div id="param-section" class="form-group hidden">
+                        <label class="form-label" for="parameter">Parameter</label>
+                        <input type="text" id="parameter" class="form-input" placeholder="Enter parameter">
+                    </div>
+
+                    <div id="webhook-section" class="form-group hidden">
+                        <label class="form-label" for="webhook-data">Webhook Data (JSON)</label>
+                        <textarea id="webhook-data" class="form-textarea" rows="6">{"content": "Your message here"}</textarea>
+                    </div>
+
+                    <button id="send-btn" class="btn btn-primary btn-full" onclick="sendRequest()">
+                        <span class="icon">📤</span> Send Request
+                    </button>
+                </div>
+
+                <!-- Response Display -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">
+                            <span class="icon">📋</span> Response
+                        </h2>
+                        <p class="card-description">API response will appear here</p>
+                    </div>
+                    
+                    <div id="error-alert" class="alert alert-error hidden">
+                        <span class="icon">⚠️</span>
+                        <span id="error-text"></span>
+                    </div>
+                    
+                    <div id="success-alert" class="alert alert-success hidden">
+                        <span class="icon">✅</span>
+                        <span>Request completed successfully</span>
+                    </div>
+                    
+                    <div id="response-container" class="response-container hidden">
+                        <pre id="response-text"></pre>
+                    </div>
+                    
+                    <div id="empty-response" class="empty-state">
+                        No response yet. Send a request to see results.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- History Tab -->
+        <div id="history" class="tab-content">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <span class="icon">📜</span> Request History
+                    </h2>
+                    <p class="card-description">Recent API requests and their responses</p>
+                </div>
+                
+                <div id="history-list">
+                    <div class="empty-state">
+                        No requests made yet. Start testing APIs to see history here.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Documentation Tab -->
+        <div id="documentation" class="tab-content">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">API Documentation</h2>
+                    <p class="card-description">Available endpoints and their usage</p>
+                </div>
+                
+                <div class="endpoint-item">
+                    <div class="endpoint-header">
+                        <span class="badge badge-outline">GET</span>
+                        <code class="endpoint-code">/api/playerdata</code>
+                    </div>
+                    <p class="card-description">Retrieves player data for a specified user ID</p>
+                </div>
+
+                <div class="endpoint-item">
+                    <div class="endpoint-header">
+                        <span class="badge badge-outline">GET</span>
+                        <code class="endpoint-code">/api/search/users</code>
+                    </div>
+                    <p class="card-description">Searches for users based on a keyword</p>
+                </div>
+
+                <div class="endpoint-item">
+                    <div class="endpoint-header">
+                        <span class="badge badge-outline">GET</span>
+                        <code class="endpoint-code">/api/search/groups</code>
+                    </div>
+                    <p class="card-description">Searches for groups using a keyword</p>
+                </div>
+
+                <div class="endpoint-item">
+                    <div class="endpoint-header">
+                        <span class="badge badge-outline">GET</span>
+                        <code class="endpoint-code">/api/search/games</code>
+                    </div>
+                    <p class="card-description">Searches for games based on a keyword</p>
+                </div>
+
+                <div class="endpoint-item">
+                    <div class="endpoint-header">
+                        <span class="badge badge-outline">POST</span>
+                        <code class="endpoint-code">/api/discord/webhook</code>
+                    </div>
+                    <p class="card-description">Sends a webhook to a Discord channel</p>
+                </div>
+
+                <div class="note">
+                    <strong>Note:</strong> This proxy service helps you access the Pekora Player Data API 
+                    without CORS issues. Replace parameters in the form above with appropriate values.
+                </div>
+            </div>
         </div>
     </div>
 
     <script>
-        const endpointSelect = document.getElementById('endpoint');
-        const paramSection = document.getElementById('param-section');
-        const webhookSection = document.getElementById('webhook-section');
-        const paramInput = document.getElementById('param');
-        const webhookUrl = document.getElementById('webhook-url');
-        const webhookMessage = document.getElementById('webhook-message');
-        const sendButton = document.getElementById('send-request');
-        const responseSection = document.getElementById('response-section');
-        const responseOutput = document.getElementById('response');
-        const errorOutput = document.getElementById('error');
+        let requestHistory = [];
+        
+        const endpoints = {
+            '/api/playerdata': { description: 'Get player data by user ID', method: 'GET', paramType: 'User ID' },
+            '/api/search/users': { description: 'Search for users by keyword', method: 'GET', paramType: 'Keyword' },
+            '/api/search/groups': { description: 'Search for groups by keyword', method: 'GET', paramType: 'Keyword' },
+            '/api/search/games': { description: 'Search for games by keyword', method: 'GET', paramType: 'Keyword' },
+            '/api/discord/webhook': { description: 'Send webhook to Discord', method: 'POST', paramType: null }
+        };
 
-        endpointSelect.addEventListener('change', () => {
+        function switchTab(tabName) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // Remove active class from all buttons
+            document.querySelectorAll('.tab-button').forEach(button => {
+                button.classList.remove('active');
+            });
+            
+            // Show selected tab content
+            document.getElementById(tabName).classList.add('active');
+            
+            // Add active class to clicked button
+            event.target.classList.add('active');
+        }
+
+        function onEndpointChange() {
+            const endpoint = document.getElementById('endpoint').value;
+            const paramSection = document.getElementById('param-section');
+            const webhookSection = document.getElementById('webhook-section');
+            const description = document.getElementById('endpoint-description');
+            const parameter = document.getElementById('parameter');
+            
+            // Hide all sections first
             paramSection.classList.add('hidden');
             webhookSection.classList.add('hidden');
-            errorOutput.classList.add('hidden');
-            responseSection.classList.add('hidden');
-            if (endpointSelect.value === '/api/discord/webhook') {
-                webhookSection.classList.remove('hidden');
-            } else if (endpointSelect.value !== '') {
-                paramSection.classList.remove('hidden');
+            description.textContent = '';
+            
+            if (endpoint && endpoints[endpoint]) {
+                description.textContent = endpoints[endpoint].description;
+                
+                if (endpoint === '/api/discord/webhook') {
+                    webhookSection.classList.remove('hidden');
+                } else {
+                    paramSection.classList.remove('hidden');
+                    parameter.placeholder = `Enter ${endpoints[endpoint].paramType}`;
+                }
             }
-        });
+        }
 
-        sendButton.addEventListener('click', async () => {
-            if (sendButton.disabled) return;
-
-            // Disable button and start cooldown
-            sendButton.disabled = true;
-            sendButton.textContent = 'Please wait...';
-            setTimeout(() => {
-                sendButton.disabled = false;
-                sendButton.textContent = 'Send Request';
-            }, 5000);
-
-            errorOutput.classList.add('hidden');
-            responseSection.classList.add('hidden');
-            responseOutput.textContent = '';
-            const endpoint = endpointSelect.value;
-
+        async function sendRequest() {
+            const endpoint = document.getElementById('endpoint').value;
+            const parameter = document.getElementById('parameter').value;
+            const webhookData = document.getElementById('webhook-data').value;
+            const sendBtn = document.getElementById('send-btn');
+            
+            if (!endpoint) {
+                showError('Please select an endpoint');
+                return;
+            }
+            
+            // Show loading state
+            sendBtn.disabled = true;
+            sendBtn.innerHTML = '<span class="loading"></span> Sending Request...';
+            
+            // Hide previous results
+            hideAlerts();
+            
             try {
                 let url = endpoint;
-                let options = { method: 'GET' };
-
+                let options = { method: endpoints[endpoint].method };
+                
                 if (endpoint === '/api/discord/webhook') {
-                    const webhookUrlValue = webhookUrl.value.trim();
-                    const message = webhookMessage.value.trim();
-                    if (!webhookUrlValue) throw new Error('Webhook URL is required');
-                    if (!message) throw new Error('Message content is required');
-                    if (!webhookUrlValue.startsWith('https://discord.com/api/webhooks/')) {
-                        throw new Error('Invalid Discord webhook URL');
+                    try {
+                        JSON.parse(webhookData);
+                    } catch (e) {
+                        throw new Error('Invalid JSON format for webhook data');
                     }
                     options = {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ content: message })
+                        body: webhookData
                     };
-                    url = webhookUrlValue; // Use the provided webhook URL directly
                 } else if (endpoint.includes('playerdata')) {
-                    const userId = paramInput.value.trim();
-                    if (!userId) throw new Error('User ID is required');
-                    url += `?id=${encodeURIComponent(userId)}`;
+                    if (!parameter.trim()) throw new Error('User ID is required');
+                    url += `?id=${encodeURIComponent(parameter)}`;
                 } else if (endpoint.includes('search')) {
-                    const keyword = paramInput.value.trim();
-                    if (!keyword) throw new Error('Keyword is required');
-                    url += `?keyword=${encodeURIComponent(keyword)}`;
+                    if (!parameter.trim()) throw new Error('Keyword is required');
+                    url += `?keyword=${encodeURIComponent(parameter)}`;
                 }
-
+                
                 const response = await fetch(url, options);
+                
                 if (!response.ok) {
                     throw new Error(`HTTP error! Status: ${response.status}`);
                 }
+                
                 const data = await response.json();
-                responseSection.classList.remove('hidden');
-                responseOutput.textContent = JSON.stringify(data, null, 2);
+                showResponse(data);
+                showSuccess();
+                addToHistory(endpoint, endpoints[endpoint].method, 'success', data);
+                
             } catch (error) {
-                errorOutput.textContent = `Error: ${error.message}`;
-                errorOutput.classList.remove('hidden');
+                showError(error.message);
+                addToHistory(endpoint, endpoints[endpoint].method, 'error', null, error.message);
+            } finally {
+                // Reset button
+                sendBtn.disabled = false;
+                sendBtn.innerHTML = '<span class="icon">📤</span> Send Request';
             }
-        });
+        }
+
+        function showError(message) {
+            const errorAlert = document.getElementById('error-alert');
+            const errorText = document.getElementById('error-text');
+            
+            errorText.textContent = message;
+            errorAlert.classList.remove('hidden');
+            
+            document.getElementById('success-alert').classList.add('hidden');
+            document.getElementById('response-container').classList.add('hidden');
+            document.getElementById('empty-response').classList.remove('hidden');
+        }
+
+        function showSuccess() {
+            document.getElementById('success-alert').classList.remove('hidden');
+            document.getElementById('error-alert').classList.add('hidden');
+        }
+
+        function showResponse(data) {
+            const responseContainer = document.getElementById('response-container');
+            const responseText = document.getElementById('response-text');
+            const emptyResponse = document.getElementById('empty-response');
+            
+            responseText.textContent = JSON.stringify(data, null, 2);
+            responseContainer.classList.remove('hidden');
+            emptyResponse.classList.add('hidden');
+        }
+
+        function hideAlerts() {
+            document.getElementById('error-alert').classList.add('hidden');
+            document.getElementById('success-alert').classList.add('hidden');
+        }
+
+        function addToHistory(endpoint, method, status, response, error) {
+            const historyItem = {
+                id: Date.now(),
+                endpoint,
+                method,
+                status,
+                response,
+                error,
+                timestamp: new Date()
+            };
+            
+            requestHistory.unshift(historyItem);
+            requestHistory = requestHistory.slice(0, 10); // Keep last 10 requests
+            
+            renderHistory();
+        }
+
+        function renderHistory() {
+            const historyList = document.getElementById('history-list');
+            
+            if (requestHistory.length === 0) {
+                historyList.innerHTML = '<div class="empty-state">No requests made yet. Start testing APIs to see history here.</div>';
+                return;
+            }
+            
+            historyList.innerHTML = requestHistory.map(request => `
+                <div class="history-item">
+                    <div class="history-header">
+                        <div class="history-info">
+                            <span class="badge badge-outline">${request.method}</span>
+                            <code>${request.endpoint}</code>
+                            <span class="badge ${request.status === 'success' ? 'badge-success' : 'badge-error'}">${request.status}</span>
+                        </div>
+                        <span class="history-time">${request.timestamp.toLocaleTimeString()}</span>
+                    </div>
+                    ${request.error ? `<p style="color: var(--error-color); font-size: 0.875rem;">${request.error}</p>` : ''}
+                </div>
+            `).join('');
+        }
     </script>
 </body>
 </html>
