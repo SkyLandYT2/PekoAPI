@@ -542,7 +542,7 @@
                 return;
             }
             
-            // Show loading state
+            // Show loading state and disable button
             sendBtn.disabled = true;
             sendBtn.innerHTML = '<span class="loading"></span> Sending Request...';
             
@@ -585,9 +585,11 @@
             } catch (error) {
                 showError(error.message);
             } finally {
-                // Reset button
-                sendBtn.disabled = false;
-                sendBtn.innerHTML = '<span class="icon">📤</span> Send Request';
+                // Keep button disabled for 5 seconds
+                setTimeout(() => {
+                    sendBtn.disabled = false;
+                    sendBtn.innerHTML = '<span class="icon">📤</span> Send Request';
+                }, 5000);
             }
         }
 
