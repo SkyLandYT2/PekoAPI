@@ -14,6 +14,10 @@
             "destination": "/api/index"
         },
         {
+            "source": "/api/search/games",
+            "destination": "/api/index"
+        },
+        {
             "source": "/api/discord/webhook",
             "destination": "/api/index"
         },
