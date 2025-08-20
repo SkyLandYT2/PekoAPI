@@ -40,8 +40,10 @@
                     <input type="text" id="param" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" placeholder="Enter userId or keyword">
                 </div>
                 <div id="webhook-section" class="hidden">
-                    <label for="webhook-data" class="block text-sm font-medium text-gray-700">Webhook Data (JSON)</label>
-                    <textarea id="webhook-data" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" rows="4" placeholder='{"content": "Your message here"}'></textarea>
+                    <label for="webhook-url" class="block text-sm font-medium text-gray-700">Discord Webhook URL</label>
+                    <input type="url" id="webhook-url" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" placeholder="https://discord.com/api/webhooks/...">
+                    <label for="webhook-message" class="block text-sm font-medium text-gray-700 mt-4">Message Content</label>
+                    <textarea id="webhook-message" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" rows="4" placeholder="Enter your message"></textarea>
                 </div>
                 <button id="send-request" class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">Send Request</button>
             </div>
@@ -61,7 +63,7 @@
                 <li class="bg-blue-50 p-3 rounded-md"><code>/api/search/games?keyword={keyword}</code> - Searches for games based on a keyword.</li>
                 <li class="bg-blue-50 p-3 rounded-md"><code>/api/discord/webhook</code> - Sends a webhook to a Discord channel.</li>
             </ul>
-            <p class="mt-4 italic text-gray-600">Note: Replace <code>{userId}</code> or <code>{keyword}</code> with appropriate values in the form above.</p>
+            <p class="mt-4 italic text-gray-600">Note: Replace <code>{userId}</code> or <code>{keyword}</code> with appropriate values in the form above. For Discord webhooks, provide a valid webhook URL and message.</p>
         </div>
     </div>
 
@@ -70,26 +72,36 @@
         const paramSection = document.getElementById('param-section');
         const webhookSection = document.getElementById('webhook-section');
         const paramInput = document.getElementById('param');
-        const webhookData = document.getElementById('webhook-data');
+        const webhookUrl = document.getElementById('webhook-url');
+        const webhookMessage = document.getElementById('webhook-message');
         const sendButton = document.getElementById('send-request');
         const responseSection = document.getElementById('response-section');
         const responseOutput = document.getElementById('response');
         const errorOutput = document.getElementById('error');
 
         endpointSelect.addEventListener('change', () => {
-            const value = endpointSelect.value;
             paramSection.classList.add('hidden');
             webhookSection.classList.add('hidden');
             errorOutput.classList.add('hidden');
             responseSection.classList.add('hidden');
-            if (value === '/api/discord/webhook') {
+            if (endpointSelect.value === '/api/discord/webhook') {
                 webhookSection.classList.remove('hidden');
-            } else if (value !== '') {
+            } else if (endpointSelect.value !== '') {
                 paramSection.classList.remove('hidden');
             }
         });
 
         sendButton.addEventListener('click', async () => {
+            if (sendButton.disabled) return;
+
+            // Disable button and start cooldown
+            sendButton.disabled = true;
+            sendButton.textContent = 'Please wait...';
+            setTimeout(() => {
+                sendButton.disabled = false;
+                sendButton.textContent = 'Send Request';
+            }, 5000);
+
             errorOutput.classList.add('hidden');
             responseSection.classList.add('hidden');
             responseOutput.textContent = '';
@@ -100,17 +112,19 @@
                 let options = { method: 'GET' };
 
                 if (endpoint === '/api/discord/webhook') {
-                    const data = webhookData.value;
-                    try {
-                        JSON.parse(data); // Validate JSON
-                    } catch (e) {
-                        throw new Error('Invalid JSON format for webhook data');
+                    const webhookUrlValue = webhookUrl.value.trim();
+                    const message = webhookMessage.value.trim();
+                    if (!webhookUrlValue) throw new Error('Webhook URL is required');
+                    if (!message) throw new Error('Message content is required');
+                    if (!webhookUrlValue.startsWith('https://discord.com/api/webhooks/')) {
+                        throw new Error('Invalid Discord webhook URL');
                     }
                     options = {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: data
+                        body: JSON.stringify({ content: message })
                     };
+                    url = webhookUrlValue; // Use the provided webhook URL directly
                 } else if (endpoint.includes('playerdata')) {
                     const userId = paramInput.value.trim();
                     if (!userId) throw new Error('User ID is required');
