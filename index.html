@@ -1,11 +1,138 @@
-<h1 style="text-align: center;">Pekora api proxy</h1>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pekora API Proxy</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        pre {
+            background-color: #1f2937;
+            color: #e5e7eb;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans text-gray-800">
+    <div class="max-w-4xl mx-auto p-6">
+        <h1 class="text-3xl font-bold text-blue-600 text-center mb-6">Pekora API Proxy</h1>
+        <p class="text-lg mb-6 text-justify">
+            Welcome to the Pekora API Proxy! This service allows you to access the Pekora Player Data API, retrieve player data, search for users, groups, and games, and send Discord webhooks without CORS issues. Use the form below to test API endpoints directly.
+        </p>
 
-<p style="text-align: center;">This is a proxy server for Pekora Player Data API. It allows you to access player data, search for users, groups, and games, and send Discord webhooks.</p>
-<p style="text-align: center;">You can use this proxy server to avoid CORS issues and to access the API from different domains.</p>
-<p style="text-align: center;">The API endpoints are:</p>
-<ul style="text-align: center;">
-    <li><code>/api/playerdata?id={userId}</code> - Get player data by user ID</li>
-    <li><code>/api/search/users?keyword={keyword}</code> - Search for users by keyword</li>
-    <li><code>/api/search/groups?keyword={keyword}</code> - Search for groups by keyword</li>
-    <li><code>/api/search/games?keyword={keyword}</code> - Search for games by keyword</li>
-    <li><code>/api/discord/webhook</code> - Send a Discord webhook</li>
+        <div class="bg-white p-6 rounded-lg shadow-md mb-6">
+            <h2 class="text-xl font-semibold text-gray-800 border-b-2 border-blue-600 pb-2 mb-4">Test API Endpoints</h2>
+            <div class="space-y-4">
+                <div>
+                    <label for="endpoint" class="block text-sm font-medium text-gray-700">Select Endpoint</label>
+                    <select id="endpoint" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                        <option value="/api/playerdata">/api/playerdata?id={userId}</option>
+                        <option value="/api/search/users">/api/search/users?keyword={keyword}</option>
+                        <option value="/api/search/groups">/api/search/groups?keyword={keyword}</option>
+                        <option value="/api/search/games">/api/search/games?keyword={keyword}</option>
+                        <option value="/api/discord/webhook">/api/discord/webhook</option>
+                    </select>
+                </div>
+                <div id="param-section" class="hidden">
+                    <label for="param" class="block text-sm font-medium text-gray-700">Parameter</label>
+                    <input type="text" id="param" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" placeholder="Enter userId or keyword">
+                </div>
+                <div id="webhook-section" class="hidden">
+                    <label for="webhook-data" class="block text-sm font-medium text-gray-700">Webhook Data (JSON)</label>
+                    <textarea id="webhook-data" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" rows="4" placeholder='{"content": "Your message here"}'></textarea>
+                </div>
+                <button id="send-request" class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">Send Request</button>
+            </div>
+            <div id="response-section" class="mt-6 hidden">
+                <h3 class="text-lg font-semibold text-gray-800">Response</h3>
+                <pre id="response" class="mt-2"></pre>
+            </div>
+            <p id="error" class="mt-4 text-red-600 hidden"></p>
+        </div>
+
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <h2 class="text-xl font-semibold text-gray-800 border-b-2 border-blue-600 pb-2 mb-4">API Endpoints</h2>
+            <ul class="space-y-2">
+                <li class="bg-blue-50 p-3 rounded-md"><code>/api/playerdata?id={userId}</code> - Retrieves player data for a specified user ID.</li>
+                <li class="bg-blue-50 p-3 rounded-md"><code>/api/search/users?keyword={keyword}</code> - Searches for users based on a keyword.</li>
+                <li class="bg-blue-50 p-3 rounded-md"><code>/api/search/groups?keyword={keyword}</code> - Searches for groups using a keyword.</li>
+                <li class="bg-blue-50 p-3 rounded-md"><code>/api/search/games?keyword={keyword}</code> - Searches for games based on a keyword.</li>
+                <li class="bg-blue-50 p-3 rounded-md"><code>/api/discord/webhook</code> - Sends a webhook to a Discord channel.</li>
+            </ul>
+            <p class="mt-4 italic text-gray-600">Note: Replace <code>{userId}</code> or <code>{keyword}</code> with appropriate values in the form above.</p>
+        </div>
+    </div>
+
+    <script>
+        const endpointSelect = document.getElementById('endpoint');
+        const paramSection = document.getElementById('param-section');
+        const webhookSection = document.getElementById('webhook-section');
+        const paramInput = document.getElementById('param');
+        const webhookData = document.getElementById('webhook-data');
+        const sendButton = document.getElementById('send-request');
+        const responseSection = document.getElementById('response-section');
+        const responseOutput = document.getElementById('response');
+        const errorOutput = document.getElementById('error');
+
+        endpointSelect.addEventListener('change', () => {
+            const value = endpointSelect.value;
+            paramSection.classList.add('hidden');
+            webhookSection.classList.add('hidden');
+            errorOutput.classList.add('hidden');
+            responseSection.classList.add('hidden');
+            if (value === '/api/discord/webhook') {
+                webhookSection.classList.remove('hidden');
+            } else if (value !== '') {
+                paramSection.classList.remove('hidden');
+            }
+        });
+
+        sendButton.addEventListener('click', async () => {
+            errorOutput.classList.add('hidden');
+            responseSection.classList.add('hidden');
+            responseOutput.textContent = '';
+            const endpoint = endpointSelect.value;
+
+            try {
+                let url = endpoint;
+                let options = { method: 'GET' };
+
+                if (endpoint === '/api/discord/webhook') {
+                    const data = webhookData.value;
+                    try {
+                        JSON.parse(data); // Validate JSON
+                    } catch (e) {
+                        throw new Error('Invalid JSON format for webhook data');
+                    }
+                    options = {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: data
+                    };
+                } else if (endpoint.includes('playerdata')) {
+                    const userId = paramInput.value.trim();
+                    if (!userId) throw new Error('User ID is required');
+                    url += `?id=${encodeURIComponent(userId)}`;
+                } else if (endpoint.includes('search')) {
+                    const keyword = paramInput.value.trim();
+                    if (!keyword) throw new Error('Keyword is required');
+                    url += `?keyword=${encodeURIComponent(keyword)}`;
+                }
+
+                const response = await fetch(url, options);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                const data = await response.json();
+                responseSection.classList.remove('hidden');
+                responseOutput.textContent = JSON.stringify(data, null, 2);
+            } catch (error) {
+                errorOutput.textContent = `Error: ${error.message}`;
+                errorOutput.classList.remove('hidden');
+            }
+        });
+    </script>
+</body>
+</html>
