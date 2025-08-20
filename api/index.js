@@ -31,7 +31,7 @@ app.use('/api/discord/webhook', webhookRoutes);
 // Default endpoint
 app.get('/', (req, res) => {
     res.json({ 
-        message: 'Roblox Player Data Proxy Server is running. Use /api/playerdata?id={userId}, /api/search/users?keyword={keyword}, or /api/discord/webhook.' 
+        message: 'Roblox Player Data Proxy Server is running. Use /api/playerdata?id={userId}, /api/search/users?keyword={keyword}, /api/search/groups?keyword={keyword}, or /api/discord/webhook.' 
     });
 });
 

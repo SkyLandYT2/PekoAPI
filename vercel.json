@@ -10,6 +10,10 @@
             "destination": "/api/index"
         },
         {
+            "source": "/api/search/groups",
+            "destination": "/api/index"
+        },
+        {
             "source": "/api/discord/webhook",
             "destination": "/api/index"
         },
