@@ -74,12 +74,12 @@ const getPlayerData = async (req, res) => {
             friendsList: friendsResponse.data.data.map(friend => friend.displayName),
             badges: badgesResponse.data,
             usernameHistory: usernameHistoryResponse.data.data,
-            groupRoles: groupRolesResponse.data.map(role => ({
+            groupRoles: Array.isArray(groupRolesResponse.data) ? groupRolesResponse.data.map(role => ({
                 groupId: role.group.id,
                 groupName: role.group.name,
                 roleId: role.role.id,
                 roleName: role.role.name,
-            }))
+            })) : []
         });
     } catch (error) {
         console.error(`Error fetching playerdata for userId: ${userId}`, error.message);
