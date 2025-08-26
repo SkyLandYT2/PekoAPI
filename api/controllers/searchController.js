@@ -23,7 +23,7 @@ const searchUsers = async (req, res) => {
     };
 
     try {
-        const searchResponse = await axios.get(`https://www.pekora.zip/search/users/results?keyword=${encodeURIComponent(keyword)}&maxRows=12&startIndex=0`, { headers });
+        const searchResponse = await axios.get(`https://www.pekora.zip/search/users/results?keyword=${encodeURIComponent(keyword)}&limit=100`, { headers }); //limit 100 btw better than 12 maxrows :)
         
         console.log(`Successfully fetched user search data for keyword: ${keyword}`);
         res.json(searchResponse.data);
