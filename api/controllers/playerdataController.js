@@ -66,12 +66,13 @@ const getPlayerData = async (req, res) => {
             friendsList: (await friendsPromise).data.data.map(friend => friend.displayName),
             badges: badgesResponse.data,
             usernamehisotry: (await unsernamehistoryPromise).data.data,
-            groupRoles: (await grouprolesPromise).data.map(role => ({
+            groupRoles: ((await grouprolesPromise).data.data || []).map(role => ({
                 groupId: role.group.id,
                 groupName: role.group.name,
                 roleId: role.role.id,
                 roleName: role.role.name,
-            })) || []
+            }))
+
         });
     } catch (error) {
         console.error(`Error fetching playerdata for userId: ${userId}`, error.message);
