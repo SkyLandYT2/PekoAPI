@@ -13,7 +13,7 @@ const sendDiscordWebhook = async (req, res) => {
         return res.status(400).json({ error: 'Invalid or missing payload parameter' });
     }
 
-    console.log(`Received Discord webhook proxy request for URL: ${webhookUrl}`);
+    console.log(`Received Discord webhook proxy request`);
 
     try {
         const response = await axios.post(webhookUrl, payload, {
@@ -23,13 +23,13 @@ const sendDiscordWebhook = async (req, res) => {
             }
         });
 
-        console.log(`Successfully sent Discord webhook for URL: ${webhookUrl}`);
+        console.log(`Successfully sent Discord webhook`);
         res.status(200).json({
             message: 'Webhook sent successfully',
             discordResponse: response.data
         });
     } catch (error) {
-        console.error(`Error sending Discord webhook for URL: ${webhookUrl}`, error.message);
+        console.error(`Error sending Discord webhook`, error.message);
         if (error.response) {
             console.error('Discord API response:', error.response.status, error.response.data);
             return res.status(error.response.status).json({
