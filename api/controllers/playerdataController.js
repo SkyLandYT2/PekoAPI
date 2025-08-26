@@ -56,7 +56,8 @@ const getPlayerData = async (req, res) => {
             isBanned: userResponse.data.isBanned,
             followers: (await followersPromise).data.count,
             following: (await followingPromise).data.count,
-            friends: (await friendsPromise).data.data.length
+            friends: (await friendsPromise).data.data.length,
+            friendsList: (await friendsPromise).data.data.map(friend => friend.displayName)
         });
     } catch (error) {
         console.error(`Error fetching playerdata for userId: ${userId}`, error.message);
