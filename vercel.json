@@ -21,6 +21,10 @@
             "source": "/api/discord/webhook",
             "destination": "/api/index"
         },
+        {
+            "source": "/api/following",
+            "destination": "/api/index"
+        },
 
         {
             "source": "/",
