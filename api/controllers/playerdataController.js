@@ -55,6 +55,9 @@ const getPlayerData = async (req, res) => {
             grouprolesPromise.catch(err => { throw new Error(`Group Roles API failed: ${err.message}`); })
         ]);
 
+        // Debug: Log the groupRolesResponse.data to inspect its structure
+        console.log(`groupRolesResponse.data for userId ${userId}:`, JSON.stringify(groupRolesResponse.data, null, 2));
+
         console.log(`Successfully fetched playerdata for userId: ${userId}`);
         res.json({
             id: userResponse.data.id,
