@@ -1,3 +1,122 @@
-<p>placeholder btw</p>
-<img src="https://http.cat/204" alt="no content">
-<article>Nothing to see here, move along</article>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PekoAPI</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 20px;
+        }
+        h1, h2 {
+            color: #333;
+        }
+        code {
+            background-color: #f4f4f4;
+            padding: 4px 6px;
+            font-size: 14px;
+            border-radius: 6px;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+            max-width: 600px;
+            margin: 20px auto;
+        }
+        li {
+            background: #fff;
+            padding: 12px 18px;
+            border: 1px solid #ddd;
+            margin: 1%;
+            text-align: left;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .endpoint {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 6px;
+        }
+        .desc {
+            color: #555;
+            font-size: 14px;
+        }
+        .example-button {
+            float: right;
+            margin-left: 10px;
+            padding: 4px 10px;
+            cursor: pointer;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            font-size: 13px;
+        }
+
+        .example-button:hover {
+            background-color: #2980b9;
+        }
+
+    </style>
+</head>
+<body>
+    <h1 style="text-align: center;">PekoAPI</h1>
+    <p style="text-align: center;">A proxy server for Pekora Player Data API.</p>
+    <h2 style="text-align: center;">How to use</h2>
+    <p style="text-align: center;">To use the API, make a GET request to the following endpoint:</p>
+    <ul>
+        <li>
+            <span class="endpoint">
+                <code>/api/user/data?id={userId}</code>
+                <button class="example-button" onclick="window.location.href='/api/user/data?id=6105'">Example</button>
+            </span>
+            <span class="desc">Get many information about user.</span>
+        </li>
+        <li>
+            <span class="endpoint">
+                <code>/api/user/following?id={userId}</code>
+                <button class="example-button" onclick="window.location.href='/api/user/following?id=6105'">Example</button>
+            </span>
+            <span class="desc">Get all list of following player data.</span>
+        </li>
+        <li>
+            <span class="endpoint">
+                <code>/api/user/followers?id={userId}</code>
+                <button class="example-button" onclick="window.location.href='/api/user/followers?id=6105'">Example</button>
+            </span>
+            <span class="desc">Get all list of followers player data.</span>
+        </li>
+        <li>
+            <span class="endpoint">
+                <code>/api/search/users?keyword={keyword}</code>
+                <button class="example-button" onclick="window.location.href='/api/search/users?keyword=test'">Example</button>
+            </span>
+            <span class="desc">Search users.</span>
+        </li>
+        <li>
+            <span class="endpoint">
+                <code>/api/search/groups?keyword={keyword}</code>
+                <button class="example-button" onclick="window.location.href='/api/search/groups?keyword=test'">Example</button>
+            </span>
+            <span class="desc">Search groups.</span>
+        </li>
+        <li>
+            <span class="endpoint">
+                <code>/api/search/games?keyword={keyword}</code>
+                <button class="example-button" onclick="window.location.href='/api/search/games?keyword=test'">Example</button>
+            </span>
+            <span class="desc">Search games.</span>
+        </li>
+        <li>
+            <span class="endpoint">
+                <code>/api/discord/webhook</code>
+            </span>
+            <span class="desc">POST request to send a Discord webhook.</span>
+        </li>
+    </ul>   
+    <p style="text-align: center;">Replace <code>{userId}</code> or <code>{keyword}</code> with the actual values</p>
+</body>
+</html>
