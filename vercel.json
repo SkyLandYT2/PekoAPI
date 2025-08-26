@@ -2,7 +2,7 @@
     "version": 2,
     "rewrites": [
         {
-            "source": "/api/playerdata",
+            "source": "/api/user/data",
             "destination": "/api/index"
         },
         {
@@ -23,6 +23,10 @@
         },
         {
             "source": "/api/user/following",
+            "destination": "/api/index"
+        },
+        {
+            "source": "/api/user/followers",
             "destination": "/api/index"
         },
 

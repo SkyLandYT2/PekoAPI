@@ -7,6 +7,7 @@ const playerdataRoutes = require('./routes/playerdata');
 const searchRoutes = require('./routes/search');
 const webhookRoutes = require('./routes/webhook');
 const followingRoutes = require('./routes/following');
+const followersRoutes = require('./routes/followers');
 
 const app = express();
 app.use(express.json());
@@ -25,15 +26,16 @@ const repoConfig = {
 };
 
 // Use route modules
-app.use('/api/playerdata', playerdataRoutes);
+app.use('/api/user/data', playerdataRoutes);
 app.use('/api/search', searchRoutes);
 app.use('/api/discord/webhook', webhookRoutes);
 app.use('/api/user/following', followingRoutes);
+app.use('/api/user/followers', followersRoutes);
 
 // Default endpoint
 app.get('/', (req, res) => {
     res.json({ 
-        message: 'Pekora Player Data Proxy Server is running. Use /api/playerdata?id={userId}, /api/search/users?keyword={keyword}, /api/search/groups?keyword={keyword}, /api/search/games?keyword={keyword}, or /api/discord/webhook, or /api/following?id={userId} endpoints.', 
+        message: 'Pekora Player Data Proxy Server is running. Use /api/playerdata?id={userId}, /api/search/users?keyword={keyword}, /api/search/groups?keyword={keyword}, /api/search/games?keyword={keyword}, or /api/discord/webhook, or /api/following?id={userId}, or api/followers?id={userId} endpoints.', 
     });
 });
 
@@ -51,6 +53,7 @@ if (require.main === module) {
         console.log(`- GET /api/search/games?keyword={keyword} - Search games`);
         console.log(`- POST /api/discord/webhook - Discord webhook`);
         console.log(`- GET /api/following?id={userId} - Following data`);
+        console.log(`- GET /api/followers?id={userId} - Followers data`);
     });
 }
 
