@@ -44,15 +44,16 @@ const getPlayerData = async (req, res) => {
 
         console.log(`Successfully fetched playerdata for userId: ${userId}`);
         res.json({
-            badges: badgesResponse.data,
-            bc: bcResponse.data,
+            id: userResponse.data.id,
             hasVerifiedBadge: userResponse.data.hasVerifiedBadge,
+            username: userResponse.data.name,
+            displayName: userResponse.data.displayName,
             status: statusResponse.data.status,
             description: userResponse.data.description,
+            membership: bcResponse.data,
+            badges: badgesResponse.data,
             created: userResponse.data.created,
             inventory_rap: userResponse.data.inventory_rap,
-            name: userResponse.data.name,
-            displayName: userResponse.data.displayName,
             isBanned: userResponse.data.isBanned,
             followers: (await followersPromise).data.count,
             following: (await followingPromise).data.count,
