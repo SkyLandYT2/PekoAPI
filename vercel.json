@@ -22,7 +22,7 @@
             "destination": "/api/index"
         },
         {
-            "source": "/api/following",
+            "source": "/api/user/following",
             "destination": "/api/index"
         },
 
