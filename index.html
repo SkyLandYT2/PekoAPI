@@ -3,6 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Open Graph Discord -->
+    <meta property="og:title" content="PekoAPI - Proxy server for Pekora Player Data API">
+    <meta property="og:description" content="Fetch user, followers, following, and search Pekora data easily via proxy API.">
+    <meta property="og:url" content="https://pekoapi.vercel.app/">
+    <meta property="og:type" content="website">
+
     <title>PekoAPI</title>
     <style>
         body {
@@ -18,7 +24,13 @@
             padding: 4px 6px;
             font-size: 14px;
             border-radius: 6px;
+            cursor: pointer; /* курсор-рука */
+            transition: background 0.2s ease;
         }
+        code:hover {
+            background-color: #e2e2e2;
+        }
+
         ul {
             list-style-type: none;
             padding: 0;
@@ -66,7 +78,8 @@
     <h1 style="text-align: center;">PekoAPI</h1>
     <p style="text-align: center;">A proxy server for Pekora Player Data API.</p>
     <h2 style="text-align: center;">How to use</h2>
-    <p style="text-align: center;">To use the API, make a GET request to the following endpoint:</p>
+    <p style="text-align: center;">To use the API, make a GET request to the following endpoint</p>
+    <p style="text-align: center;">Replace <code>{userId}</code> or <code>{keyword}</code> with the actual things</p>
     <ul>
         <li>
             <span class="endpoint">
@@ -117,6 +130,15 @@
             <span class="desc">POST request to send a Discord webhook.</span>
         </li>
     </ul>   
-    <p style="text-align: center;">Replace <code>{userId}</code> or <code>{keyword}</code> with the actual values</p>
+    <p style="text-align: center;">Follow me on pekora btw → <a href="https://www.pekora.zip/users/6105/profile" target="_blank">Herobrine</a> page.</p>
+    <script>
+        document.querySelectorAll("code").forEach(el => {
+            el.addEventListener("click", () => {
+                navigator.clipboard.writeText(el.innerText).then(() => {
+                    alert("Copied to clipboard: " + el.innerText);
+                });
+            });
+        });
+    </script>
 </body>
 </html>
