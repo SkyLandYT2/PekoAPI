@@ -31,7 +31,7 @@ const getPlayerData = async (req, res) => {
         const followingPromise = axios.get(`https://www.pekora.zip/apisite/friends/v1/users/${userId}/followings/count`, { headers });
         const friendsPromise = axios.get(`https://www.pekora.zip/apisite/friends/v1/users/${userId}/friends`, { headers });
         const unsernamehistoryPromise = axios.get(`https://www.pekora.zip/apisite/users/v1/users/${userId}/username-history?limit=100`, { headers });
-        const grouprolesPromise = axios.get(`https://www.pekora.zip/apisite/groups/v1/users/${userId}/roles`, { headers });
+        const grouprolesPromise = axios.get(`https://www.pekora.zip/apisite/groups/v1/users/${userId}/group/roles`, { headers });
 
 
         const [badgesResponse, bcResponse, userResponse, statusResponse] = await Promise.all([
