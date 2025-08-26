@@ -62,7 +62,7 @@ const getPlayerData = async (req, res) => {
             friends: (await friendsPromise).data.data.length,
             friendsList: (await friendsPromise).data.data.map(friend => friend.displayName),
             badges: badgesResponse.data,
-            usernamehisotry: (await unsernamehistoryPromise).data.data.length
+            usernamehisotry: (await unsernamehistoryPromise).data.data
 
         });
     } catch (error) {
