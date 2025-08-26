@@ -30,7 +30,7 @@ const getPlayerData = async (req, res) => {
         const followersPromise = axios.get(`https://www.pekora.zip/apisite/friends/v1/users/${userId}/followers/count`, { headers });
         const followingPromise = axios.get(`https://www.pekora.zip/apisite/friends/v1/users/${userId}/followings/count`, { headers });
         const friendsPromise = axios.get(`https://www.pekora.zip/apisite/friends/v1/users/${userId}/friends`, { headers });
-        const unsernamehistoryPromise = axios.get(`https://www.pekora.zip/apisite/users/v1/users/${userId}/username-history?limit=100`, { headers });
+        const usernameHistoryPromise = axios.get(`https://www.pekora.zip/apisite/users/v1/users/${userId}/username-history?limit=100`, { headers });
         const grouprolesPromise = axios.get(`https://www.pekora.zip/apisite/groups/v1/users/${userId}/groups/roles`, { headers });
 
         const [
@@ -51,9 +51,10 @@ const getPlayerData = async (req, res) => {
             followersPromise.catch(err => { throw new Error(`Followers API failed: ${err.message}`); }),
             followingPromise.catch(err => { throw new Error(`Following API failed: ${err.message}`); }),
             friendsPromise.catch(err => { throw new Error(`Friends API failed: ${err.message}`); }),
-            unsernamehistoryPromise.catch(err => { throw new Error(`Username History API failed: ${err.message}`); }),
-            grouprolesPromise.catch(err => { throw new Error(`Group Roles API failed: ${err.message}`); }) // Fixed closing parenthesis
-    ]);
+            usernameHistoryPromise.catch(err => { throw new Error(`Username History API failed: ${err.message}`); }),
+            grouprolesPromise.catch(err => { throw new Error(`Group Roles API failed: ${err.message}`); })
+        ]);
+
         console.log(`Successfully fetched playerdata for userId: ${userId}`);
         res.json({
             id: userResponse.data.id,
@@ -67,19 +68,18 @@ const getPlayerData = async (req, res) => {
             inventory_rap: userResponse.data.inventory_rap,
             isBanned: userResponse.data.isBanned,
             isStaff: userResponse.data.isStaff,
-            followers: (await followersPromise).data.count,
-            following: (await followingPromise).data.count,
-            friends: (await friendsPromise).data.data.length,
-            friendsList: (await friendsPromise).data.data.map(friend => friend.displayName),
+            followers: followersResponse.data.count,
+            following: followingResponse.data.count,
+            friends: friendsResponse.data.data.length,
+            friendsList: friendsResponse.data.data.map(friend => friend.displayName),
             badges: badgesResponse.data,
-            usernamehisotry: (await unsernamehistoryPromise).data.data,
-            groupRoles: (await grouprolesPromise).data.map(role => ({
+            usernameHistory: usernameHistoryResponse.data.data,
+            groupRoles: groupRolesResponse.data.map(role => ({
                 groupId: role.group.id,
                 groupName: role.group.name,
                 roleId: role.role.id,
                 roleName: role.role.name,
             }))
-
         });
     } catch (error) {
         console.error(`Error fetching playerdata for userId: ${userId}`, error.message);
