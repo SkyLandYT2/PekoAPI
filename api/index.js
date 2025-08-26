@@ -19,16 +19,16 @@ const octokit = new Octokit({
 
 // GitHub repository details
 const repoConfig = {
-    owner: 'SkyLandYT2', // Replace with your GitHub username
-    repo: 'PekoAPI',    // Replace with your repository name
-    branch: 'main'                 // Replace with your branch name
+    owner: 'SkyLandYT2',
+    repo: 'PekoAPI',
+    branch: 'main'
 };
 
 // Use route modules
 app.use('/api/playerdata', playerdataRoutes);
 app.use('/api/search', searchRoutes);
 app.use('/api/discord/webhook', webhookRoutes);
-app.use('/api/following', followingRoutes);
+app.use('/api/user/following', followingRoutes);
 
 // Default endpoint
 app.get('/', (req, res) => {
