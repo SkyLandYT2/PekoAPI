@@ -24,7 +24,6 @@
             background-color: #f4f4f4;
             padding: 4px 6px;
             font-size: 14px;
-            border-radius: 6px;
             cursor: pointer;
             transition: background 0.2s ease;
         }
@@ -75,7 +74,6 @@
             margin: 20px auto;
             padding: 20px;
             border: 1px solid #ddd;
-            border-radius: 8px;
             background: #fff;
         }
         #api-builder select, #api-builder input, #api-builder button {
@@ -97,7 +95,6 @@
             margin-top: 20px;
             padding: 10px;
             background-color: #f4f4f4;
-            border-radius: 6px;
             word-break: break-all;
             cursor: pointer;
         }
@@ -109,13 +106,11 @@
             margin-top: 15px;
             padding: 15px;
             border: 1px solid #ddd;
-            border-radius: 8px;
             background: #fafafa;
             display: grid;
             grid-template-columns: repeat(2, 1fr);
             gap: 10px 20px;
         }
-
         #fields-selection h3 {
             grid-column: 1 / -1;
             margin: 0 0 10px 0;
@@ -125,123 +120,168 @@
         }
         #fields-selection label {
             display: grid;
-            grid-template-columns: 1fr auto; /* текст слева, чекбокс справа */
+            grid-template-columns: 1fr auto;
             align-items: center;
             width: 100%;
             padding: 6px 10px;
             border: 1px solid #eee;
-            border-radius: 6px;
             background: #fff;
             cursor: pointer;
             transition: background 0.2s, box-shadow 0.2s;
             font-size: 14px;
             box-sizing: border-box;
         }
-
         #fields-selection label:hover {
             background: #f0f7ff;
             box-shadow: 0 1px 3px rgba(0,0,0,0.08);
         }
-
         #fields-selection input[type="checkbox"] {
-            justify-self: end; /* всегда ровно справа */
+            justify-self: end;
+        }
+        .tab-nav {
+            max-width: 600px;
+            margin: 20px auto;
+            display: flex;
+            border-bottom: 2px solid #ddd;
+        }
+        .tab-nav button {
+            flex: 1;
+            padding: 10px;
+            background: #f4f4f4;
+            border: none;
+            border-bottom: 2px solid transparent;
+            cursor: pointer;
+            font-size: 16px;
+            color: #333;
+            transition: background 0.2s, border-bottom 0.2s;
+        }
+        .tab-nav button.active {
+            background: #fff;
+            border-bottom: 2px solid #3498db;
+            font-weight: bold;
+        }
+        .tab-nav button:hover {
+            background: #e2e2e2;
+        }
+        .tab-content {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .tab-pane {
+            display: none;
+        }
+        .tab-pane.active {
+            display: block;
         }
     </style>
 </head>
 <body>
     <h1 style="text-align: center;">PekoAPI</h1>
     <p style="text-align: center;">A proxy server for Pekora Player Data API.</p>
-    <h2 style="text-align: center;">How to use</h2>
-    <p style="text-align: center;">To use the API, make a GET request to the following endpoint</p>
-    <p style="text-align: center;">Replace <code>{userId}</code> or <code>{keyword}</code> with the actual things</p>
-    <ul>
-        <li>
-            <span class="endpoint">
-                <code>/api/user/data?id={userId}</code>
-                <button class="example-button" onclick="window.location.href='/api/user/data?id=6105'">Example</button>
-            </span>
-            <span class="desc">Get many information about user.</span>
-        </li>
-        <li>
-            <span class="endpoint">
-                <code>/api/user/following?id={userId}</code>
-                <button class="example-button" onclick="window.location.href='/api/user/following?id=6105'">Example</button>
-            </span>
-            <span class="desc">Get all list of following player data.</span>
-        </li>
-        <li>
-            <span class="endpoint">
-                <code>/api/user/followers?id={userId}</code>
-                <button class="example-button" onclick="window.location.href='/api/user/followers?id=6105'">Example</button>
-            </span>
-            <span class="desc">Get all list of followers player data.</span>
-        </li>
-        <li>
-            <span class="endpoint">
-                <code>/api/search/users?keyword={keyword}</code>
-                <button class="example-button" onclick="window.location.href='/api/search/users?keyword=test'">Example</button>
-            </span>
-            <span class="desc">Search users.</span>
-        </li>
-        <li>
-            <span class="endpoint">
-                <code>/api/search/groups?keyword={keyword}</code>
-                <button class="example-button" onclick="window.location.href='/api/search/groups?keyword=test'">Example</button>
-            </span>
-            <span class="desc">Search groups.</span>
-        </li>
-        <li>
-            <span class="endpoint">
-                <code>/api/search/games?keyword={keyword}</code>
-                <button class="example-button" onclick="window.location.href='/api/search/games?keyword=test'">Example</button>
-            </span>
-            <span class="desc">Search games.</span>
-        </li>
-        <li>
-            <span class="endpoint">
-                <code>/api/discord/webhook</code>
-            </span>
-            <span class="desc">POST request to send a Discord webhook.</span>
-        </li>
-    </ul>
-    <h2 style="text-align: center;">API Request Builder</h2>
-    <div id="api-builder">
-        <select id="endpoint-select" onchange="toggleFieldsSelection()">
-            <option value="">Select an endpoint</option>
-            <option value="/api/user/data">/api/user/data</option>
-            <option value="/api/user/following">/api/user/following</option>
-            <option value="/api/user/followers">/api/user/followers</option>
-            <option value="/api/search/users">/api/search/users</option>
-            <option value="/api/search/groups">/api/search/groups</option>
-            <option value="/api/search/games">/api/search/games</option>
-        </select>
-        <input type="text" id="param-input" placeholder="Enter userId or keyword (e.g., 6105 or test)">
-        <div id="fields-selection">
-            <h3>Select fields:</h3>
-            <label><span>ID</span><input type="checkbox" value="id" checked></label>
-            <label><span>Has Verified Badge</span><input type="checkbox" value="hasVerifiedBadge" checked></label>
-            <label><span>Username</span><input type="checkbox" value="username" checked></label>
-            <label><span>Display Name</span><input type="checkbox" value="displayName" checked></label>
-            <label><span>Status</span><input type="checkbox" value="status" checked></label>
-            <label><span>Description</span><input type="checkbox" value="description" checked></label>
-            <label><span>Membership</span><input type="checkbox" value="membership" checked></label>
-            <label><span>Created</span><input type="checkbox" value="created" checked></label>
-            <label><span>Inventory RAP</span><input type="checkbox" value="inventory_rap" checked></label>
-            <label><span>Is Banned</span><input type="checkbox" value="isBanned" checked></label>
-            <label><span>Is Staff</span><input type="checkbox" value="isStaff" checked></label>
-            <label><span>Followers</span><input type="checkbox" value="followers" checked></label>
-            <label><span>Following</span><input type="checkbox" value="following" checked></label>
-            <label><span>Friends</span><input type="checkbox" value="friends" checked></label>
-            <label><span>Friends List</span><input type="checkbox" value="friendsList" checked></label>
-            <label><span>Badges</span><input type="checkbox" value="badges" checked></label>
-            <label><span>Username History</span><input type="checkbox" value="usernamehistory" checked></label>
-            <label><span>Group Roles</span><input type="checkbox" value="groupRoles" checked></label>
-        </div>
 
-        <button onclick="buildRequest()">Build Request</button>
-        <div id="request-url" onclick="copyRequestUrl()">Click to copy the request URL</div>
+    <div class="tab-nav">
+        <button class="tab-button active" onclick="openTab('docs')">API Documentation</button>
+        <button class="tab-button" onclick="openTab('builder')">API Request Builder</button>
     </div>
+
+    <div class="tab-content">
+        <div id="docs" class="tab-pane active">
+            <h2 style="text-align: center;">How to use</h2>
+            <p style="text-align: center;">To use the API, make a GET request to the following endpoint</p>
+            <p style="text-align: center;">Replace <code>{userId}</code> or <code>{keyword}</code> with the actual things</p>
+            <ul>
+                <li>
+                    <span class="endpoint">
+                        <code>/api/user/data?id={userId}</code>
+                        <button class="example-button" onclick="window.location.href='/api/user/data?id=6105'">Example</button>
+                    </span>
+                    <span class="desc">Get many information about user.</span>
+                </li>
+                <li>
+                    <span class="endpoint">
+                        <code>/api/user/following?id={userId}</code>
+                        <button class="example-button" onclick="window.location.href='/api/user/following?id=6105'">Example</button>
+                    </span>
+                    <span class="desc">Get all list of following player data.</span>
+                </li>
+                <li>
+                    <span class="endpoint">
+                        <code>/api/user/followers?id={userId}</code>
+                        <button class="example-button" onclick="window.location.href='/api/user/followers?id=6105'">Example</button>
+                    </span>
+                    <span class="desc">Get all list of followers player data.</span>
+                </li>
+                <li>
+                    <span class="endpoint">
+                        <code>/api/search/users?keyword={keyword}</code>
+                        <button class="example-button" onclick="window.location.href='/api/search/users?keyword=test'">Example</button>
+                    </span>
+                    <span class="desc">Search users.</span>
+                </li>
+                <li>
+                    <span class="endpoint">
+                        <code>/api/search/groups?keyword={keyword}</code>
+                        <button class="example-button" onclick="window.location.href='/api/search/groups?keyword=test'">Example</button>
+                    </span>
+                    <span class="desc">Search groups.</span>
+                </li>
+                <li>
+                    <span class="endpoint">
+                        <code>/api/search/games?keyword={keyword}</code>
+                        <button class="example-button" onclick="window.location.href='/api/search/games?keyword=test'">Example</button>
+                    </span>
+                    <span class="desc">Search games.</span>
+                </li>
+                <li>
+                    <span class="endpoint">
+                        <code>/api/discord/webhook</code>
+                    </span>
+                    <span class="desc">POST request to send a Discord webhook.</span>
+                </li>
+            </ul>
+        </div>
+        <div id="builder" class="tab-pane">
+            <h2 style="text-align: center;">API Request Builder</h2>
+            <div id="api-builder">
+                <select id="endpoint-select" onchange="toggleFieldsSelection()">
+                    <option value="">Select an endpoint</option>
+                    <option value="/api/user/data">/api/user/data</option>
+                    <option value="/api/user/following">/api/user/following</option>
+                    <option value="/api/user/followers">/api/user/followers</option>
+                    <option value="/api/search/users">/api/search/users</option>
+                    <option value="/api/search/groups">/api/search/groups</option>
+                    <option value="/api/search/games">/api/search/games</option>
+                </select>
+                <input type="text" id="param-input"  placeholder="Enter userId or keyword (e.g., 6105 or test)">
+                <div id="fields-selection">
+                    <h3>Select fields:</h3>
+                    <label><span>ID</span><input type="checkbox" value="id" checked></label>
+                    <label><span>Has Verified Badge</span><input type="checkbox" value="hasVerifiedBadge" checked></label>
+                    <label><span>Username</span><input type="checkbox" value="username" checked></label>
+                    <label><span>Display Name</span><input type="checkbox" value="displayName" checked></label>
+                    <label><span>Status</span><input type="checkbox" value="status" checked></label>
+                    <label><span>Description</span><input type="checkbox" value="description" checked></label>
+                    <label><span>Membership</span><input type="checkbox" value="membership" checked></label>
+                    <label><span>Created</span><input type="checkbox" value="created" checked></label>
+                    <label><span>Inventory RAP</span><input type="checkbox" value="inventory_rap" checked></label>
+                    <label><span>Is Banned</span><input type="checkbox" value="isBanned" checked></label>
+                    <label><span>Is Staff</span><input type="checkbox" value="isStaff" checked></label>
+                    <label><span>Followers</span><input type="checkbox" value="followers" checked></label>
+                    <label><span>Following</span><input type="checkbox" value="following" checked></label>
+                    <label><span>Friends</span><input type="checkbox" value="friends" checked></label>
+                    <label><span>Friends List</span><input type="checkbox" value="friendsList" checked></label>
+                    <label><span>Badges</span><input type="checkbox" value="badges" checked></label>
+                    <label><span>Username History</span><input type="checkbox" value="usernamehistory" checked></label>
+                    <label><span>Group Roles</span><input type="checkbox" value="groupRoles" checked></label>
+                </div>
+                <button onclick="buildRequest()">Build Request</button>
+                <div id="request-url" onclick="copyRequestUrl()">Click to copy the request URL</div>
+            </div>
+        </div>
+    </div>
+
     <p style="text-align: center;">Follow me on pekora btw → <a href="https://www.pekora.zip/users/6105/profile" target="_blank">Herobrine</a> page.</p>
+
     <script>
         document.querySelectorAll("code").forEach(el => {
             el.addEventListener("click", () => {
@@ -255,12 +295,11 @@
             const endpoint = document.getElementById('endpoint-select').value;
             const fieldsSelection = document.getElementById('fields-selection');
             if (endpoint === '/api/user/data') {
-                fieldsSelection.style.display = 'grid'; // фикс: всегда grid
+                fieldsSelection.style.display = 'grid';
             } else {
                 fieldsSelection.style.display = 'none';
             }
         }
-
 
         function buildRequest() {
             const endpoint = document.getElementById('endpoint-select').value;
@@ -304,6 +343,15 @@
                     alert('Copied to clipboard: ' + requestUrl);
                 });
             }
+        }
+
+        function openTab(tabName) {
+            const tabs = document.querySelectorAll('.tab-pane');
+            const buttons = document.querySelectorAll('.tab-button');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            buttons.forEach(btn => btn.classList.remove('active'));
+            document.getElementById(tabName).classList.add('active');
+            document.querySelector(`.tab-button[onclick="openTab('${tabName}')"]`).classList.add('active');
         }
     </script>
 </body>
