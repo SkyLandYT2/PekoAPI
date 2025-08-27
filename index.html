@@ -31,7 +31,6 @@
         code:hover {
             background-color: #e2e2e2;
         }
-
         ul {
             list-style-type: none;
             padding: 0;
@@ -105,6 +104,48 @@
         #request-url:hover {
             background-color: #e2e2e2;
         }
+        #fields-selection {
+            display: none;
+            margin-top: 15px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: #fafafa;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px 20px;
+        }
+
+        #fields-selection h3 {
+            grid-column: 1 / -1;
+            margin: 0 0 10px 0;
+            font-size: 16px;
+            color: #333;
+            text-align: center;
+        }
+        #fields-selection label {
+            display: grid;
+            grid-template-columns: 1fr auto; /* текст слева, чекбокс справа */
+            align-items: center;
+            width: 100%;
+            padding: 6px 10px;
+            border: 1px solid #eee;
+            border-radius: 6px;
+            background: #fff;
+            cursor: pointer;
+            transition: background 0.2s, box-shadow 0.2s;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+
+        #fields-selection label:hover {
+            background: #f0f7ff;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+
+        #fields-selection input[type="checkbox"] {
+            justify-self: end; /* всегда ровно справа */
+        }
     </style>
 </head>
 <body>
@@ -165,7 +206,7 @@
     </ul>
     <h2 style="text-align: center;">API Request Builder</h2>
     <div id="api-builder">
-        <select id="endpoint-select">
+        <select id="endpoint-select" onchange="toggleFieldsSelection()">
             <option value="">Select an endpoint</option>
             <option value="/api/user/data">/api/user/data</option>
             <option value="/api/user/following">/api/user/following</option>
@@ -175,6 +216,28 @@
             <option value="/api/search/games">/api/search/games</option>
         </select>
         <input type="text" id="param-input" placeholder="Enter userId or keyword (e.g., 6105 or test)">
+        <div id="fields-selection">
+            <h3>Select fields:</h3>
+            <label><span>ID</span><input type="checkbox" value="id" checked></label>
+            <label><span>Has Verified Badge</span><input type="checkbox" value="hasVerifiedBadge" checked></label>
+            <label><span>Username</span><input type="checkbox" value="username" checked></label>
+            <label><span>Display Name</span><input type="checkbox" value="displayName" checked></label>
+            <label><span>Status</span><input type="checkbox" value="status" checked></label>
+            <label><span>Description</span><input type="checkbox" value="description" checked></label>
+            <label><span>Membership</span><input type="checkbox" value="membership" checked></label>
+            <label><span>Created</span><input type="checkbox" value="created" checked></label>
+            <label><span>Inventory RAP</span><input type="checkbox" value="inventory_rap" checked></label>
+            <label><span>Is Banned</span><input type="checkbox" value="isBanned" checked></label>
+            <label><span>Is Staff</span><input type="checkbox" value="isStaff" checked></label>
+            <label><span>Followers</span><input type="checkbox" value="followers" checked></label>
+            <label><span>Following</span><input type="checkbox" value="following" checked></label>
+            <label><span>Friends</span><input type="checkbox" value="friends" checked></label>
+            <label><span>Friends List</span><input type="checkbox" value="friendsList" checked></label>
+            <label><span>Badges</span><input type="checkbox" value="badges" checked></label>
+            <label><span>Username History</span><input type="checkbox" value="usernamehistory" checked></label>
+            <label><span>Group Roles</span><input type="checkbox" value="groupRoles" checked></label>
+        </div>
+
         <button onclick="buildRequest()">Build Request</button>
         <div id="request-url" onclick="copyRequestUrl()">Click to copy the request URL</div>
     </div>
@@ -188,6 +251,17 @@
             });
         });
 
+        function toggleFieldsSelection() {
+            const endpoint = document.getElementById('endpoint-select').value;
+            const fieldsSelection = document.getElementById('fields-selection');
+            if (endpoint === '/api/user/data') {
+                fieldsSelection.style.display = 'grid'; // фикс: всегда grid
+            } else {
+                fieldsSelection.style.display = 'none';
+            }
+        }
+
+
         function buildRequest() {
             const endpoint = document.getElementById('endpoint-select').value;
             const param = document.getElementById('param-input').value;
@@ -199,17 +273,32 @@
                 return;
             }
 
-            let url = domain + endpoint;
+            let displayUrl = domain + endpoint;
+            let copyUrl = domain + endpoint;
             if (param) {
                 const paramName = endpoint.includes('search') ? 'keyword' : 'id';
-                url += `?${paramName}=${encodeURIComponent(param)}`;
+                const encodedParam = encodeURIComponent(param);
+                displayUrl += `?${paramName}=${param}`;
+                copyUrl += `?${paramName}=${encodedParam}`;
             }
 
-            requestUrlDiv.textContent = url;
+            if (endpoint === '/api/user/data') {
+                const checkboxes = document.querySelectorAll('#fields-selection input[type="checkbox"]:checked');
+                const selectedFields = Array.from(checkboxes).map(cb => cb.value);
+                if (selectedFields.length > 0) {
+                    displayUrl += param ? '&' : '?';
+                    displayUrl += `fields=${selectedFields.join(',')}`;
+                    copyUrl += param ? '&' : '?';
+                    copyUrl += `fields=${encodeURIComponent(selectedFields.join(','))}`;
+                }
+            }
+
+            requestUrlDiv.textContent = displayUrl;
+            requestUrlDiv.dataset.copyUrl = copyUrl;
         }
 
         function copyRequestUrl() {
-            const requestUrl = document.getElementById('request-url').textContent;
+            const requestUrl = document.getElementById('request-url').dataset.copyUrl || document.getElementById('request-url').textContent;
             if (requestUrl && !requestUrl.startsWith('Please select')) {
                 navigator.clipboard.writeText(requestUrl).then(() => {
                     alert('Copied to clipboard: ' + requestUrl);

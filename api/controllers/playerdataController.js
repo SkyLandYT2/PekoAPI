@@ -11,7 +11,7 @@ const getPlayerData = async (req, res) => {
 
     const PEKOSECURITY = process.env.PEKOSECURITY;
 
-    console.log(`Received playerdata request for userId: ${userId}`);
+    console.log(`Received playerdata request for userId: ${userId}, fields: ${fields || 'all'}`);
 
     if (!PEKOSECURITY) {
         console.error('Missing PEKOSECURITY for playerdata request');
@@ -24,68 +24,157 @@ const getPlayerData = async (req, res) => {
     };
 
     try {
-        const badgesPromise = axios.get(`https://www.pekora.zip/apisite/accountinformation/v1/users/${userId}/roblox-badges`, { headers });
-        const bcPromise = axios.get(`https://www.pekora.zip/apisite/premiumfeatures/v1/users/${userId}/validate-membership`, { headers });
-        const userPromise = axios.get(`https://www.pekora.zip/apisite/users/v1/users/${userId}`, { headers });
-        const statusPromise = axios.get(`https://www.pekora.zip/apisite/users/v1/users/${userId}/status`, { headers });
-        const followersPromise = axios.get(`https://www.pekora.zip/apisite/friends/v1/users/${userId}/followers/count`, { headers });
-        const followingPromise = axios.get(`https://www.pekora.zip/apisite/friends/v1/users/${userId}/followings/count`, { headers });
-        const friendsPromise = axios.get(`https://www.pekora.zip/apisite/friends/v1/users/${userId}/friends`, { headers });
-        const usernamehistoryPromise = axios.get(`https://www.pekora.zip/apisite/users/v1/users/${userId}/username-history?limit=100`, { headers });
-        const grouprolesPromise = axios.get(`https://www.pekora.zip/apisite/groups/v1/users/${userId}/groups/roles`, { headers });
+        // Define API promises based on requested fields
+        const promises = [];
+        const promiseMap = {};
 
-        const [badgesResponse, bcResponse, userResponse, statusResponse, followersResponse, followingResponse, friendsResponse, usernamehistoryResponse, grouprolesResponse] = await Promise.all([
-            badgesPromise.catch(err => { throw new Error(`Badges API failed: ${err.message}`); }),
-            bcPromise.catch(err => { throw new Error(`BC API failed: ${err.message}`); }),
-            userPromise.catch(err => { throw new Error(`User API failed: ${err.message}`); }),
-            statusPromise.catch(err => { throw new Error(`Status API failed: ${err.message}`); }),
-            followersPromise.catch(err => { throw new Error(`Followers API failed: ${err.message}`); }),
-            followingPromise.catch(err => { throw new Error(`Following API failed: ${err.message}`); }),
-            friendsPromise.catch(err => { throw new Error(`Friends API failed: ${err.message}`); }),
-            usernamehistoryPromise.catch(err => { throw new Error(`Username History API failed: ${err.message}`); }),
-            grouprolesPromise.catch(err => { throw new Error(`Group Roles API failed: ${err.message}`); })
-        ]);
+        const validFields = [
+            'id', 'hasVerifiedBadge', 'username', 'displayName', 'status', 'description',
+            'membership', 'created', 'inventory_rap', 'isBanned', 'isStaff', 'followers',
+            'following', 'friends', 'friendsList', 'badges', 'usernamehistory', 'groupRoles'
+        ];
+
+        // If no fields specified, include all promises
+        if (!fields || fields.length === 0) {
+            promiseMap.badges = axios.get(`https://www.pekora.zip/apisite/accountinformation/v1/users/${userId}/roblox-badges`, { headers });
+            promiseMap.bc = axios.get(`https://www.pekora.zip/apisite/premiumfeatures/v1/users/${userId}/validate-membership`, { headers });
+            promiseMap.user = axios.get(`https://www.pekora.zip/apisite/users/v1/users/${userId}`, { headers });
+            promiseMap.status = axios.get(`https://www.pekora.zip/apisite/users/v1/users/${userId}/status`, { headers });
+            promiseMap.followers = axios.get(`https://www.pekora.zip/apisite/friends/v1/users/${userId}/followers/count`, { headers });
+            promiseMap.following = axios.get(`https://www.pekora.zip/apisite/friends/v1/users/${userId}/followings/count`, { headers });
+            promiseMap.friends = axios.get(`https://www.pekora.zip/apisite/friends/v1/users/${userId}/friends`, { headers });
+            promiseMap.usernamehistory = axios.get(`https://www.pekora.zip/apisite/users/v1/users/${userId}/username-history?limit=100`, { headers });
+            promiseMap.grouproles = axios.get(`https://www.pekora.zip/apisite/groups/v1/users/${userId}/groups/roles`, { headers });
+            promises.push(
+                promiseMap.badges.catch(err => { throw new Error(`Badges API failed: ${err.message}`); }),
+                promiseMap.bc.catch(err => { throw new Error(`BC API failed: ${err.message}`); }),
+                promiseMap.user.catch(err => { throw new Error(`User API failed: ${err.message}`); }),
+                promiseMap.status.catch(err => { throw new Error(`Status API failed: ${err.message}`); }),
+                promiseMap.followers.catch(err => { throw new Error(`Followers API failed: ${err.message}`); }),
+                promiseMap.following.catch(err => { throw new Error(`Following API failed: ${err.message}`); }),
+                promiseMap.friends.catch(err => { throw new Error(`Friends API failed: ${err.message}`); }),
+                promiseMap.usernamehistory.catch(err => { throw new Error(`Username History API failed: ${err.message}`); }),
+                promiseMap.grouproles.catch(err => { throw new Error(`Group Roles API failed: ${err.message}`); })
+            );
+        } else {
+            // Only include promises for requested fields
+            const needsUser = fields.some(field => ['id', 'hasVerifiedBadge', 'username', 'displayName', 'description', 'created', 'inventory_rap', 'isBanned', 'isStaff'].includes(field));
+            const needsStatus = fields.includes('status');
+            const needsMembership = fields.includes('membership');
+            const needsBadges = fields.includes('badges');
+            const needsFollowers = fields.includes('followers');
+            const needsFollowing = fields.includes('following');
+            const needsFriends = fields.some(field => ['friends', 'friendsList'].includes(field));
+            const needsUsernamehistory = fields.includes('usernamehistory');
+            const needsGrouproles = fields.includes('groupRoles');
+
+            if (needsUser) {
+                promiseMap.user = axios.get(`https://www.pekora.zip/apisite/users/v1/users/${userId}`, { headers });
+                promises.push(promiseMap.user.catch(err => { throw new Error(`User API failed: ${err.message}`); }));
+            }
+            if (needsStatus) {
+                promiseMap.status = axios.get(`https://www.pekora.zip/apisite/users/v1/users/${userId}/status`, { headers });
+                promises.push(promiseMap.status.catch(err => { throw new Error(`Status API failed: ${err.message}`); }));
+            }
+            if (needsMembership) {
+                promiseMap.bc = axios.get(`https://www.pekora.zip/apisite/premiumfeatures/v1/users/${userId}/validate-membership`, { headers });
+                promises.push(promiseMap.bc.catch(err => { throw new Error(`BC API failed: ${err.message}`); }));
+            }
+            if (needsBadges) {
+                promiseMap.badges = axios.get(`https://www.pekora.zip/apisite/accountinformation/v1/users/${userId}/roblox-badges`, { headers });
+                promises.push(promiseMap.badges.catch(err => { throw new Error(`Badges API failed: ${err.message}`); }));
+            }
+            if (needsFollowers) {
+                promiseMap.followers = axios.get(`https://www.pekora.zip/apisite/friends/v1/users/${userId}/followers/count`, { headers });
+                promises.push(promiseMap.followers.catch(err => { throw new Error(`Followers API failed: ${err.message}`); }));
+            }
+            if (needsFollowing) {
+                promiseMap.following = axios.get(`https://www.pekora.zip/apisite/friends/v1/users/${userId}/followings/count`, { headers });
+                promises.push(promiseMap.following.catch(err => { throw new Error(`Following API failed: ${err.message}`); }));
+            }
+            if (needsFriends) {
+                promiseMap.friends = axios.get(`https://www.pekora.zip/apisite/friends/v1/users/${userId}/friends`, { headers });
+                promises.push(promiseMap.friends.catch(err => { throw new Error(`Friends API failed: ${err.message}`); }));
+            }
+            if (needsUsernamehistory) {
+                promiseMap.usernamehistory = axios.get(`https://www.pekora.zip/apisite/users/v1/users/${userId}/username-history?limit=100`, { headers });
+                promises.push(promiseMap.usernamehistory.catch(err => { throw new Error(`Username History API failed: ${err.message}`); }));
+            }
+            if (needsGrouproles) {
+                promiseMap.grouproles = axios.get(`https://www.pekora.zip/apisite/groups/v1/users/${userId}/groups/roles`, { headers });
+                promises.push(promiseMap.grouproles.catch(err => { throw new Error(`Group Roles API failed: ${err.message}`); }));
+            }
+
+            // If no valid fields are requested, return an error
+            if (promises.length === 0) {
+                return res.status(400).json({ error: 'No valid fields specified' });
+            }
+        }
+
+        // Execute only the necessary API calls
+        const responses = await Promise.all(promises);
 
         console.log(`Successfully fetched playerdata for userId: ${userId}`);
 
-        // Full response object
-        const fullResponse = {
-            id: userResponse.data.id,
-            hasVerifiedBadge: userResponse.data.hasVerifiedBadge,
-            username: userResponse.data.name,
-            displayName: userResponse.data.displayName,
-            status: statusResponse.data.status,
-            description: userResponse.data.description,
-            membership: bcResponse.data,
-            created: userResponse.data.created,
-            inventory_rap: userResponse.data.inventory_rap,
-            isBanned: userResponse.data.isBanned,
-            isStaff: userResponse.data.isStaff,
-            followers: followersResponse.data.count,
-            following: followingResponse.data.count,
-            friends: friendsResponse.data.data.length,
-            friendsList: friendsResponse.data.data.map(friend => friend.displayName),
-            badges: badgesResponse.data,
-            usernamehistory: usernamehistoryResponse.data.data,
-            groupRoles: (grouprolesResponse.data.data || []).map(role => ({
+        // Construct full response with available data
+        const fullResponse = {};
+        if (promiseMap.user) {
+            const userResponse = responses[promises.indexOf(promiseMap.user.catch(err => { throw new Error(`User API failed: ${err.message}`); }))];
+            fullResponse.id = userResponse.data.id;
+            fullResponse.hasVerifiedBadge = userResponse.data.hasVerifiedBadge;
+            fullResponse.username = userResponse.data.name;
+            fullResponse.displayName = userResponse.data.displayName;
+            fullResponse.description = userResponse.data.description;
+            fullResponse.created = userResponse.data.created;
+            fullResponse.inventory_rap = userResponse.data.inventory_rap;
+            fullResponse.isBanned = userResponse.data.isBanned;
+            fullResponse.isStaff = userResponse.data.isStaff;
+        }
+        if (promiseMap.status) {
+            const statusResponse = responses[promises.indexOf(promiseMap.status.catch(err => { throw new Error(`Status API failed: ${err.message}`); }))];
+            fullResponse.status = statusResponse.data.status;
+        }
+        if (promiseMap.bc) {
+            const bcResponse = responses[promises.indexOf(promiseMap.bc.catch(err => { throw new Error(`BC API failed: ${err.message}`); }))];
+            fullResponse.membership = bcResponse.data;
+        }
+        if (promiseMap.badges) {
+            const badgesResponse = responses[promises.indexOf(promiseMap.badges.catch(err => { throw new Error(`Badges API failed: ${err.message}`); }))];
+            fullResponse.badges = badgesResponse.data;
+        }
+        if (promiseMap.followers) {
+            const followersResponse = responses[promises.indexOf(promiseMap.followers.catch(err => { throw new Error(`Followers API failed: ${err.message}`); }))];
+            fullResponse.followers = followersResponse.data.count;
+        }
+        if (promiseMap.following) {
+            const followingResponse = responses[promises.indexOf(promiseMap.following.catch(err => { throw new Error(`Following API failed: ${err.message}`); }))];
+            fullResponse.following = followingResponse.data.count;
+        }
+        if (promiseMap.friends) {
+            const friendsResponse = responses[promises.indexOf(promiseMap.friends.catch(err => { throw new Error(`Friends API failed: ${err.message}`); }))];
+            fullResponse.friends = friendsResponse.data.data.length;
+            fullResponse.friendsList = friendsResponse.data.data.map(friend => friend.displayName);
+        }
+        if (promiseMap.usernamehistory) {
+            const usernamehistoryResponse = responses[promises.indexOf(promiseMap.usernamehistory.catch(err => { throw new Error(`Username History API failed: ${err.message}`); }))];
+            fullResponse.usernamehistory = usernamehistoryResponse.data.data;
+        }
+        if (promiseMap.grouproles) {
+            const grouprolesResponse = responses[promises.indexOf(promiseMap.grouproles.catch(err => { throw new Error(`Group Roles API failed: ${err.message}`); }))];
+            fullResponse.groupRoles = (grouprolesResponse.data.data || []).map(role => ({
                 groupId: role.group.id,
                 groupName: role.group.name,
                 roleId: role.role.id,
                 roleName: role.role.name
-            }))
-        };
+            }));
+        }
 
         // Filter response based on fields parameter
         let response = fullResponse;
         if (fields && fields.length > 0) {
             response = {};
-            const validFields = [
-                'id', 'hasVerifiedBadge', 'username', 'displayName', 'status', 'description',
-                'membership', 'created', 'inventory_rap', 'isBanned', 'isStaff', 'followers',
-                'following', 'friends', 'friendsList', 'badges', 'usernamehistory', 'groupRoles'
-            ];
             fields.forEach(field => {
-                if (validFields.includes(field)) {
+                if (validFields.includes(field) && field in fullResponse) {
                     response[field] = fullResponse[field];
                 }
             });
