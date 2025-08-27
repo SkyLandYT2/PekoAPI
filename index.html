@@ -68,11 +68,43 @@
             border: none;
             font-size: 13px;
         }
-
         .example-button:hover {
             background-color: #2980b9;
         }
-
+        #api-builder {
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: #fff;
+        }
+        #api-builder select, #api-builder input, #api-builder button {
+            padding: 8px;
+            margin: 5px 0;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        #api-builder button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        #api-builder button:hover {
+            background-color: #2980b9;
+        }
+        #request-url {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #f4f4f4;
+            border-radius: 6px;
+            word-break: break-all;
+            cursor: pointer;
+        }
+        #request-url:hover {
+            background-color: #e2e2e2;
+        }
     </style>
 </head>
 <body>
@@ -130,7 +162,22 @@
             </span>
             <span class="desc">POST request to send a Discord webhook.</span>
         </li>
-    </ul>   
+    </ul>
+    <h2 style="text-align: center;">API Request Builder</h2>
+    <div id="api-builder">
+        <select id="endpoint-select">
+            <option value="">Select an endpoint</option>
+            <option value="/api/user/data">/api/user/data</option>
+            <option value="/api/user/following">/api/user/following</option>
+            <option value="/api/user/followers">/api/user/followers</option>
+            <option value="/api/search/users">/api/search/users</option>
+            <option value="/api/search/groups">/api/search/groups</option>
+            <option value="/api/search/games">/api/search/games</option>
+        </select>
+        <input type="text" id="param-input" placeholder="Enter userId or keyword (e.g., 6105 or test)">
+        <button onclick="buildRequest()">Build Request</button>
+        <div id="request-url" onclick="copyRequestUrl()">Click to copy the request URL</div>
+    </div>
     <p style="text-align: center;">Follow me on pekora btw → <a href="https://www.pekora.zip/users/6105/profile" target="_blank">Herobrine</a> page.</p>
     <script>
         document.querySelectorAll("code").forEach(el => {
@@ -140,6 +187,35 @@
                 });
             });
         });
+
+        function buildRequest() {
+            const endpoint = document.getElementById('endpoint-select').value;
+            const param = document.getElementById('param-input').value;
+            const requestUrlDiv = document.getElementById('request-url');
+            const domain = 'https://pekoapi.vercel.app';
+
+            if (!endpoint) {
+                requestUrlDiv.textContent = 'Please select an endpoint.';
+                return;
+            }
+
+            let url = domain + endpoint;
+            if (param) {
+                const paramName = endpoint.includes('search') ? 'keyword' : 'id';
+                url += `?${paramName}=${encodeURIComponent(param)}`;
+            }
+
+            requestUrlDiv.textContent = url;
+        }
+
+        function copyRequestUrl() {
+            const requestUrl = document.getElementById('request-url').textContent;
+            if (requestUrl && !requestUrl.startsWith('Please select')) {
+                navigator.clipboard.writeText(requestUrl).then(() => {
+                    alert('Copied to clipboard: ' + requestUrl);
+                });
+            }
+        }
     </script>
 </body>
 </html>

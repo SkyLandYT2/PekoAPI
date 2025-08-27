@@ -2,6 +2,7 @@ const axios = require('axios');
 
 const getPlayerData = async (req, res) => {
     const userId = parseInt(req.query.id, 10);
+    const fields = req.query.fields ? req.query.fields.split(',').map(field => field.trim()) : null;
 
     if (!userId || isNaN(userId) || userId <= 0) {
         console.error('Invalid or missing userId for playerdata request');
@@ -30,11 +31,10 @@ const getPlayerData = async (req, res) => {
         const followersPromise = axios.get(`https://www.pekora.zip/apisite/friends/v1/users/${userId}/followers/count`, { headers });
         const followingPromise = axios.get(`https://www.pekora.zip/apisite/friends/v1/users/${userId}/followings/count`, { headers });
         const friendsPromise = axios.get(`https://www.pekora.zip/apisite/friends/v1/users/${userId}/friends`, { headers });
-        const unsernamehistoryPromise = axios.get(`https://www.pekora.zip/apisite/users/v1/users/${userId}/username-history?limit=100`, { headers });
+        const usernamehistoryPromise = axios.get(`https://www.pekora.zip/apisite/users/v1/users/${userId}/username-history?limit=100`, { headers });
         const grouprolesPromise = axios.get(`https://www.pekora.zip/apisite/groups/v1/users/${userId}/groups/roles`, { headers });
 
-
-        const [badgesResponse, bcResponse, userResponse, statusResponse] = await Promise.all([
+        const [badgesResponse, bcResponse, userResponse, statusResponse, followersResponse, followingResponse, friendsResponse, usernamehistoryResponse, grouprolesResponse] = await Promise.all([
             badgesPromise.catch(err => { throw new Error(`Badges API failed: ${err.message}`); }),
             bcPromise.catch(err => { throw new Error(`BC API failed: ${err.message}`); }),
             userPromise.catch(err => { throw new Error(`User API failed: ${err.message}`); }),
@@ -42,13 +42,14 @@ const getPlayerData = async (req, res) => {
             followersPromise.catch(err => { throw new Error(`Followers API failed: ${err.message}`); }),
             followingPromise.catch(err => { throw new Error(`Following API failed: ${err.message}`); }),
             friendsPromise.catch(err => { throw new Error(`Friends API failed: ${err.message}`); }),
-            grouprolesPromise.catch(err => { throw new Error(`Group Roles API failed: ${err.message}`); }),
-            unsernamehistoryPromise.catch(err => { throw new Error(`Username History API failed: ${err.message}`) 
-            })
+            usernamehistoryPromise.catch(err => { throw new Error(`Username History API failed: ${err.message}`); }),
+            grouprolesPromise.catch(err => { throw new Error(`Group Roles API failed: ${err.message}`); })
         ]);
 
         console.log(`Successfully fetched playerdata for userId: ${userId}`);
-        res.json({
+
+        // Full response object
+        const fullResponse = {
             id: userResponse.data.id,
             hasVerifiedBadge: userResponse.data.hasVerifiedBadge,
             username: userResponse.data.name,
@@ -60,20 +61,40 @@ const getPlayerData = async (req, res) => {
             inventory_rap: userResponse.data.inventory_rap,
             isBanned: userResponse.data.isBanned,
             isStaff: userResponse.data.isStaff,
-            followers: (await followersPromise).data.count,
-            following: (await followingPromise).data.count,
-            friends: (await friendsPromise).data.data.length,
-            friendsList: (await friendsPromise).data.data.map(friend => friend.displayName),
+            followers: followersResponse.data.count,
+            following: followingResponse.data.count,
+            friends: friendsResponse.data.data.length,
+            friendsList: friendsResponse.data.data.map(friend => friend.displayName),
             badges: badgesResponse.data,
-            usernamehisotry: (await unsernamehistoryPromise).data.data,
-            groupRoles: ((await grouprolesPromise).data.data || []).map(role => ({
+            usernamehistory: usernamehistoryResponse.data.data,
+            groupRoles: (grouprolesResponse.data.data || []).map(role => ({
                 groupId: role.group.id,
                 groupName: role.group.name,
                 roleId: role.role.id,
-                roleName: role.role.name,
+                roleName: role.role.name
             }))
+        };
 
-        });
+        // Filter response based on fields parameter
+        let response = fullResponse;
+        if (fields && fields.length > 0) {
+            response = {};
+            const validFields = [
+                'id', 'hasVerifiedBadge', 'username', 'displayName', 'status', 'description',
+                'membership', 'created', 'inventory_rap', 'isBanned', 'isStaff', 'followers',
+                'following', 'friends', 'friendsList', 'badges', 'usernamehistory', 'groupRoles'
+            ];
+            fields.forEach(field => {
+                if (validFields.includes(field)) {
+                    response[field] = fullResponse[field];
+                }
+            });
+            if (Object.keys(response).length === 0) {
+                return res.status(400).json({ error: 'No valid fields specified' });
+            }
+        }
+
+        res.json(response);
     } catch (error) {
         console.error(`Error fetching playerdata for userId: ${userId}`, error.message);
         if (error.response) {
